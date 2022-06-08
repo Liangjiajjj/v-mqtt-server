@@ -20,7 +20,7 @@ public class CacheDupPublishMessageManager implements IDupPublishMessageManager 
 
     @Override
     public void put(String clientId, MqttPublishMessage publishMessage) {
-        Objects.requireNonNull(clientId2DupPublishMessageMap.computeIfPresent(clientId, ((s, map) -> new ConcurrentHashMap<>()))).
+        Objects.requireNonNull(clientId2DupPublishMessageMap.computeIfAbsent(clientId, ((m) -> new ConcurrentHashMap<>(16)))).
                 put(publishMessage.messageId(), publishMessage);
     }
 

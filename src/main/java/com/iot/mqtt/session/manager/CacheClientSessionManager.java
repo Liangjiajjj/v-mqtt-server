@@ -23,7 +23,9 @@ public class CacheClientSessionManager implements IClientSessionManager {
 
     @Override
     public ClientSession register(String brokerId, MqttEndpoint endpoint, EventExecutor executor) {
-        return clientSessionMap.put(endpoint.clientIdentifier(), new ClientSession(brokerId, endpoint,executor));
+        ClientSession clientSession = new ClientSession(brokerId, endpoint, executor);
+        clientSessionMap.put(endpoint.clientIdentifier(), clientSession);
+        return clientSession;
     }
 
     @Override

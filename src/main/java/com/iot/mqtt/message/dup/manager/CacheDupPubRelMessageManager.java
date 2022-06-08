@@ -20,7 +20,7 @@ public class CacheDupPubRelMessageManager implements IDupPubRelMessageManager {
 
     @Override
     public void put(String clientId, DupPubRelMessage publishMessage) {
-        Objects.requireNonNull(clientId2DupPubRelMessageMap.computeIfPresent(clientId, ((s, map) -> new ConcurrentHashMap<>()))).
+        Objects.requireNonNull(clientId2DupPubRelMessageMap.computeIfAbsent(clientId, ((map) -> new ConcurrentHashMap<>(16)))).
                 put(publishMessage.getMessageId(), publishMessage);
     }
 

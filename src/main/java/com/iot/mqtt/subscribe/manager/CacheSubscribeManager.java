@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 订阅管理
+ *
  * @author liangjiajun
  */
 @Service
@@ -26,14 +27,14 @@ public class CacheSubscribeManager implements ISubscribeManager {
     private final static Map<String, Set<String>> clientId2TopicsMap = new ConcurrentHashMap<>();
 
     @Override
-    public void put(String topicFilter, Subscribe subscribeStore) {
+    public void put(String clientId, Subscribe subscribeStore) {
+        String topicFilter = subscribeStore.getTopicFilter();
         if (StrUtil.contains(topicFilter, '#') || StrUtil.contains(topicFilter, '+')) {
             throw new RuntimeException("暂时不支持表达式 topic !!!");
         }
-        String clientId = subscribeStore.getClientId();
         clientId2TopicsMap.computeIfAbsent(clientId, (m) -> new HashSet<>()).add(topicFilter);
         topicFilter2SubscribeMap
-                .computeIfPresent(topicFilter, ((s, map) -> new ConcurrentHashMap<>()))
+                .computeIfAbsent(topicFilter, (m) -> new ConcurrentHashMap<>(16))
                 .put(clientId, subscribeStore);
     }
 
@@ -51,6 +52,6 @@ public class CacheSubscribeManager implements ISubscribeManager {
 
     @Override
     public Collection<Subscribe> search(String topicFilter) {
-        return topicFilter2SubscribeMap.getOrDefault(topicFilter, new ConcurrentHashMap<>()).values();
+        return topicFilter2SubscribeMap.getOrDefault(topicFilter, Collections.EMPTY_MAP).values();
     }
 }
