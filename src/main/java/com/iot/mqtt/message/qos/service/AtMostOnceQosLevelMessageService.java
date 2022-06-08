@@ -3,7 +3,7 @@ package com.iot.mqtt.message.qos.service;
 import com.iot.mqtt.message.messageid.service.IMessageIdService;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
-import com.iot.mqtt.subscribe.manager.Subscribe;
+import com.iot.mqtt.subscribe.Subscribe;
 import io.vertx.core.Future;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;

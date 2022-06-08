@@ -1,5 +1,7 @@
 package com.iot.mqtt.subscribe.manager;
 
+import com.iot.mqtt.subscribe.Subscribe;
+
 import java.util.Collection;
 
 public interface ISubscribeManager {

@@ -1,8 +1,8 @@
-package com.iot.mqtt.subscribe;
+package com.iot.mqtt.subscribe.manager;
 
 import cn.hutool.core.util.StrUtil;
-import com.iot.mqtt.subscribe.manager.ISubscribeManager;
-import com.iot.mqtt.subscribe.manager.Subscribe;
+import com.iot.mqtt.subscribe.Subscribe;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 订阅管理
  */
 @Service
+@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
 public class CacheSubscribeManager implements ISubscribeManager {
     /**
      * 订阅 列表

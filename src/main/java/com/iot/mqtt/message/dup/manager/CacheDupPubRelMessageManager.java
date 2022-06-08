@@ -2,6 +2,7 @@ package com.iot.mqtt.message.dup.manager;
 
 
 import com.iot.mqtt.message.dup.DupPubRelMessage;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.Objects;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
 public class CacheDupPubRelMessageManager implements IDupPubRelMessageManager {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, DupPubRelMessage>> clientId2DupPubRelMessageMap = new ConcurrentHashMap<>();

@@ -1,4 +1,4 @@
-package com.iot.mqtt.subscribe.manager;
+package com.iot.mqtt.subscribe;
 
 import io.netty.handler.codec.mqtt.MqttQoS;
 import lombok.AllArgsConstructor;

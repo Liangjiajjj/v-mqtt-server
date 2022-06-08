@@ -3,6 +3,7 @@ package com.iot.mqtt.session.manager;
 import com.iot.mqtt.session.ClientSession;
 import io.netty.util.concurrent.EventExecutor;
 import io.vertx.mqtt.MqttEndpoint;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 本地内存session
  */
 @Service
+@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
 public class CacheClientSessionManager implements IClientSessionManager {
 
     /**

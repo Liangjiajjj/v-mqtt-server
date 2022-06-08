@@ -2,7 +2,7 @@ package com.iot.mqtt.message.handler;
 
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
-import com.iot.mqtt.subscribe.manager.Subscribe;
+import com.iot.mqtt.subscribe.Subscribe;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.mqtt.MqttTopicSubscription;
 import io.vertx.mqtt.messages.MqttSubscribeMessage;

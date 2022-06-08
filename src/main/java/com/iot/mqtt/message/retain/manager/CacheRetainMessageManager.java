@@ -2,6 +2,7 @@ package com.iot.mqtt.message.retain.manager;
 
 import cn.hutool.core.util.StrUtil;
 import io.vertx.mqtt.messages.MqttPublishMessage;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
 public class CacheRetainMessageManager implements IRetainMessageManager {
 
     private Map<String, MqttPublishMessage> topic2RetainMessageMap = new ConcurrentHashMap<>();

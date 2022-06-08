@@ -4,7 +4,7 @@ import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
-import com.iot.mqtt.subscribe.manager.Subscribe;
+import com.iot.mqtt.subscribe.Subscribe;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
