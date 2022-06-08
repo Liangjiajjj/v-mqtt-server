@@ -6,6 +6,7 @@ import java.util.Collection;
 
 /**
  * PUBLISH重发消息存储服务接口, 当QoS=1和QoS=2时存在该重发机制
+ * @author liangjiajun
  */
 public interface IDupPublishMessageManager {
 

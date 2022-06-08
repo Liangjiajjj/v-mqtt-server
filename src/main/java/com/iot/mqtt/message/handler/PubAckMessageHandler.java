@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * 发送消息的应答包
+ * @author liangjiajun
  */
 public class PubAckMessageHandler extends BaseMessageHandler<MqttPubAckMessage> {
 

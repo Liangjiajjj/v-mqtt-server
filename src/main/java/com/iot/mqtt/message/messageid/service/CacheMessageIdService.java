@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 单机的消息id生产器（集群继续用redis）
+ * @author liangjiajun
  */
 @Slf4j
 @Service

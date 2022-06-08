@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author liangjiajun
+ */
 @Service
 @ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
 public class CacheRetainMessageManager implements IRetainMessageManager {

@@ -6,6 +6,7 @@ import java.util.Collection;
 
 /**
  * PUBREL重发消息存储服务接口, 当QoS=2时存在该重发机制
+ * @author liangjiajun
  */
 public interface IDupPubRelMessageManager {
 

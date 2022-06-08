@@ -5,6 +5,9 @@ import com.iot.mqtt.subscribe.Subscribe;
 import io.vertx.core.Future;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 
+/**
+ * @author liangjiajun
+ */
 public interface IQosLevelMessageService {
 
     /**

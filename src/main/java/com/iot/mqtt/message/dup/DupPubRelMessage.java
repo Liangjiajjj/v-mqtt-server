@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * @author liangjiajun
+ */
 @Data
 @Builder
 public class DupPubRelMessage implements Serializable {

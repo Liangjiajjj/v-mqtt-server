@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author liangjiajun
+ */
 @Service
 @ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
 public class CacheDupPubRelMessageManager implements IDupPubRelMessageManager {

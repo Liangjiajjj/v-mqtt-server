@@ -4,6 +4,9 @@ import io.vertx.mqtt.messages.MqttPublishMessage;
 
 import java.util.List;
 
+/**
+ * @author liangjiajun
+ */
 public interface IRetainMessageManager {
     /**
      * 存储retain标志消息

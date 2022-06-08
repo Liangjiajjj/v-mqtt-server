@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+/**
+ * @author liangjiajun
+ */
 @Slf4j
 @Service(value = "AT_LEAST_ONCE") // 至少一次
 public class AtLeastOnceQosLevelMessageService implements IQosLevelMessageService {

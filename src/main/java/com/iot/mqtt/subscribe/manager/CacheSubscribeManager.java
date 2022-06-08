@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 订阅管理
+ * @author liangjiajun
  */
 @Service
 @ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")

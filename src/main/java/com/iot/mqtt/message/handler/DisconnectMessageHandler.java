@@ -9,6 +9,9 @@ import io.vertx.mqtt.messages.MqttDisconnectMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 
+/**
+ * @author liangjiajun
+ */
 @Slf4j
 public class DisconnectMessageHandler extends BaseMessageHandler<MqttDisconnectMessage> {
 

@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 订阅topic
+ * @author liangjiajun
  */
 @Data
 @EqualsAndHashCode

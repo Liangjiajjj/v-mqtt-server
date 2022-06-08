@@ -4,6 +4,9 @@ import com.iot.mqtt.subscribe.Subscribe;
 
 import java.util.Collection;
 
+/**
+ * @author liangjiajun
+ */
 public interface ISubscribeManager {
 
     /**

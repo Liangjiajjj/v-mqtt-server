@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+/**
+ * @author liangjiajun
+ */
 @Slf4j
 @Service(value = "AT_MOST_ONCE")
 public class AtMostOnceQosLevelMessageService implements IQosLevelMessageService {
