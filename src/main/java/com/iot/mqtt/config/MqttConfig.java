@@ -1,0 +1,21 @@
+package com.iot.mqtt.config;
+
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+
+@Getter
+@Configuration
+public class MqttConfig {
+
+    @Value("${mqtt.session_thread_count}")
+    private Integer sessionThreadCount;
+
+    @Value("${mqtt.port}")
+    private Integer port;
+
+    @Value("${mqtt.ssl}")
+    private Boolean ssl;
+
+
+}
