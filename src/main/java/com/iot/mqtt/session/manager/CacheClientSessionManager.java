@@ -20,12 +20,12 @@ public class CacheClientSessionManager implements IClientSessionManager {
     /**
      * Session 列表
      */
-    private final static Map<String, ClientSession> clientSessionMap = new ConcurrentHashMap<>();
+    private final static Map<String, ClientSession> CLIENT_SESSION_MAP = new ConcurrentHashMap<>();
 
     @Override
     public ClientSession register(String brokerId, MqttEndpoint endpoint, EventExecutor executor) {
         ClientSession clientSession = new ClientSession(brokerId, endpoint, executor);
-        clientSessionMap.put(endpoint.clientIdentifier(), clientSession);
+        CLIENT_SESSION_MAP.put(endpoint.clientIdentifier(), clientSession);
         return clientSession;
     }
 
@@ -36,16 +36,16 @@ public class CacheClientSessionManager implements IClientSessionManager {
 
     @Override
     public ClientSession get(String clientId) {
-        return clientSessionMap.get(clientId);
+        return CLIENT_SESSION_MAP.get(clientId);
     }
 
     @Override
     public boolean containsKey(String clientId) {
-        return clientSessionMap.containsKey(clientId);
+        return CLIENT_SESSION_MAP.containsKey(clientId);
     }
 
     @Override
     public void remove(String clientId) {
-        clientSessionMap.remove(clientId);
+        CLIENT_SESSION_MAP.remove(clientId);
     }
 }

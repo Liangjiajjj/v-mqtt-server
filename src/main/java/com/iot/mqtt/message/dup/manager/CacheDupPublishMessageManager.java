@@ -16,27 +16,27 @@ import java.util.concurrent.ConcurrentHashMap;
 @ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
 public class CacheDupPublishMessageManager implements IDupPublishMessageManager {
 
-    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, MqttPublishMessage>> clientId2DupPublishMessageMap = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, ConcurrentHashMap<Integer, MqttPublishMessage>> CLIENT_ID_TO_DUP_PUBLISH_MESSAGE_MAP = new ConcurrentHashMap<>();
 
     @Override
     public void put(String clientId, MqttPublishMessage publishMessage) {
-        Objects.requireNonNull(clientId2DupPublishMessageMap.computeIfAbsent(clientId, ((m) -> new ConcurrentHashMap<>(16)))).
+        Objects.requireNonNull(CLIENT_ID_TO_DUP_PUBLISH_MESSAGE_MAP.computeIfAbsent(clientId, ((m) -> new ConcurrentHashMap<>(16)))).
                 put(publishMessage.messageId(), publishMessage);
     }
 
     @Override
     public Collection<MqttPublishMessage> get(String clientId) {
-        return Optional.ofNullable(clientId2DupPublishMessageMap.get(clientId))
+        return Optional.ofNullable(CLIENT_ID_TO_DUP_PUBLISH_MESSAGE_MAP.get(clientId))
                 .orElseGet(ConcurrentHashMap::new).values();
     }
 
     @Override
     public void remove(String clientId, int messageId) {
-        Optional.ofNullable(clientId2DupPublishMessageMap.get(clientId)).ifPresent((map) -> map.remove(messageId));
+        Optional.ofNullable(CLIENT_ID_TO_DUP_PUBLISH_MESSAGE_MAP.get(clientId)).ifPresent((map) -> map.remove(messageId));
     }
 
     @Override
     public void removeByClient(String clientId) {
-        clientId2DupPublishMessageMap.remove(clientId);
+        CLIENT_ID_TO_DUP_PUBLISH_MESSAGE_MAP.remove(clientId);
     }
 }
