@@ -5,3 +5,6 @@ mqtt :
   broker :
     id : 1
     cluster_enabled : false
+
+logging:
+  config: classpath:config/log4j2.xml

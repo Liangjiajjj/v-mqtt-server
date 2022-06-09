@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
+import io.vertx.mqtt.MqttClientOptions;
 import io.vertx.mqtt.messages.MqttConnAckMessage;
 import lombok.SneakyThrows;
 
@@ -12,7 +13,8 @@ public class MqttClientTest {
 
     @SneakyThrows
     public void test() {
-        MqttClient client = MqttClient.create(Vertx.vertx());
+        MqttClientOptions options = new MqttClientOptions();
+        MqttClient client = MqttClient.create(Vertx.vertx(), options);
         Future<MqttConnAckMessage> future = client.connect(1833, "127.0.0.1");
         client.publishHandler(s -> {
             System.out.println("There are new message in topic: " + s.topicName());
