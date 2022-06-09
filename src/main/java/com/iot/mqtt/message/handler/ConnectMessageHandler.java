@@ -9,6 +9,7 @@ import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import io.vertx.core.Handler;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.messages.MqttPublishMessage;
@@ -59,7 +60,7 @@ public class ConnectMessageHandler implements Handler<MqttEndpoint> {
     public void init() {
         Integer nThreads = Optional.ofNullable(mqttConfig.getSessionThreadCount())
                 .orElse(Runtime.getRuntime().availableProcessors());
-        sessionExecutors = new DefaultEventExecutorGroup(nThreads);
+        sessionExecutors = new DefaultEventExecutorGroup(nThreads, new DefaultThreadFactory("SESSION-EXECUTOR"));
     }
 
     @Override

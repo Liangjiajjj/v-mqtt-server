@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * 关闭服务handler
+ * @author liangjiajun
  */
 public class CloseMessageHandler extends BaseMessageHandler<Void> {
 
