@@ -6,6 +6,9 @@ import io.vertx.mqtt.MqttWill;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * @author liangjiajun
+ */
 @Getter
 @AllArgsConstructor
 public class ClientSession {

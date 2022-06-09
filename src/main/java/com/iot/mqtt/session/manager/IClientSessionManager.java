@@ -4,6 +4,9 @@ import com.iot.mqtt.session.ClientSession;
 import io.netty.util.concurrent.EventExecutor;
 import io.vertx.mqtt.MqttEndpoint;
 
+/**
+ * @author liangjiajun
+ */
 public interface IClientSessionManager {
     /**
      * 存储会话

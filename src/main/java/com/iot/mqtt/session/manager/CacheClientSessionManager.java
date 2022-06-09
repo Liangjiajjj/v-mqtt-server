@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 本地内存session
+ * @author liangjiajun
  */
 @Service
 @ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
