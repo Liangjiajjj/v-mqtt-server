@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  * 订阅topic
@@ -34,13 +35,15 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
         for (MqttTopicSubscription subscription : message.topicSubscriptions()) {
             MqttQoS mqttQoS = subscription.qualityOfService();
             String topicName = subscription.topicName();
-            if (log.isTraceEnabled()) {
-                log.trace("Subscription ClientId {} for {} with QoS  {}", clientId, topicName, mqttQoS);
-            }
+            log.debug("Subscription ClientId {} for {} with QoS  {}", clientId, topicName, mqttQoS);
             grantedQosLevels.add(mqttQoS);
             subscribeManager.put(clientId, new Subscribe(clientId, topicName, mqttQoS));
         }
         // 确认订阅请求
         clientSession.getEndpoint().subscribeAcknowledge(message.messageId(), grantedQosLevels);
+    }
+
+    public static void main(String[] args) {
+        TreeMap<String,String> map = new TreeMap<>();
     }
 }

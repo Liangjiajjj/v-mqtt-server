@@ -15,9 +15,10 @@ import java.util.Objects;
 
 /**
  * @author liangjiajun
+ * 至少一次
  */
 @Slf4j
-@Service(value = "AT_LEAST_ONCE") // 至少一次
+@Service(value = "AT_LEAST_ONCE")
 public class AtLeastOnceQosLevelMessageService implements IQosLevelMessageService {
 
     @Autowired

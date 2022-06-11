@@ -25,9 +25,7 @@ public class UnsubscribeMessageHandler extends BaseMessageHandler<MqttUnsubscrib
     public void handle(MqttUnsubscribeMessage message) {
         String clientId = clientSession.getClientId();
         for (String topicName : message.topics()) {
-            if (log.isTraceEnabled()) {
-                log.trace("Unsubscription ClientId {} for {} ", clientId, topicName);
-            }
+            log.debug("Unsubscription ClientId {} for {} ", clientId, topicName);
             subscribeManager.remove(topicName, clientId);
         }
         // 确认订阅请求
