@@ -1,5 +1,7 @@
 package com.iot.mqtt.message.handler;
 
+import com.iot.mqtt.channel.ClientChannel;
+import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.session.ClientSession;
@@ -17,15 +19,18 @@ public class DisconnectMessageHandler extends BaseMessageHandler<MqttDisconnectM
 
     private IClientSessionManager clientSessionManager;
 
+    private IClientChannelManager clientChannelManager;
+
     private ISubscribeManager subscribeManager;
 
     private IDupPublishMessageManager dupPublishMessageManager;
 
     private IDupPubRelMessageManager dupPubRelMessageManager;
 
-    public DisconnectMessageHandler(ApplicationContext context, ClientSession clientSession) {
+    public DisconnectMessageHandler(ApplicationContext context, ClientChannel clientSession) {
         super(context, clientSession);
         this.clientSessionManager = context.getBean(IClientSessionManager.class);
+        this.clientChannelManager = context.getBean(IClientChannelManager.class);
         this.subscribeManager = context.getBean(ISubscribeManager.class);
         this.dupPublishMessageManager = context.getBean(IDupPublishMessageManager.class);
         this.dupPubRelMessageManager = context.getBean(IDupPubRelMessageManager.class);
@@ -33,14 +38,15 @@ public class DisconnectMessageHandler extends BaseMessageHandler<MqttDisconnectM
 
     @Override
     public void handle(MqttDisconnectMessage disconnectMessage) {
-        String clientId = clientSession.getClientId();
-        if (clientSession.isCleanSession()) {
+        String clientId = channel.getClientId();
+        if (channel.isCleanSession()) {
             subscribeManager.removeForClient(clientId);
             dupPublishMessageManager.removeByClient(clientId);
             dupPubRelMessageManager.removeByClient(clientId);
         }
-        log.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, clientSession.isCleanSession());
+        log.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, channel.isCleanSession());
         clientSessionManager.remove(clientId);
-        clientSession.getEndpoint().close();
+        clientChannelManager.remove(clientId);
+        channel.close();
     }
 }

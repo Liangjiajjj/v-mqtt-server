@@ -4,7 +4,9 @@ mqtt :
   session_thread_count : 8
   broker :
     id : 1
-    cluster_enabled : false
+    ssl : false
+    password_must : false
+    cluster_enabled: false
 
 logging:
   config: classpath:config/log4j2.xml

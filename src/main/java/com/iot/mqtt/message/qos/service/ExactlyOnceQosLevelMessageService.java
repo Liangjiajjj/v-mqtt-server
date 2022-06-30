@@ -1,5 +1,7 @@
 package com.iot.mqtt.message.qos.service;
 
+import com.iot.mqtt.channel.ClientChannel;
+import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.message.messageid.service.IMessageIdService;
 import com.iot.mqtt.session.ClientSession;
@@ -31,18 +33,20 @@ public class ExactlyOnceQosLevelMessageService implements IQosLevelMessageServic
     private IClientSessionManager clientSessionManager;
 
     @Autowired
+    private IClientChannelManager clientChannelManager;
+
+    @Autowired
     private IDupPublishMessageManager dupPublishMessageManager;
 
     @Override
-    public Future<Integer> publish(ClientSession sendSession, Subscribe subscribe, MqttPublishMessage message) {
+    public Future<Integer> publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
         String toClientId = subscribe.getClientId();
-        ClientSession toClientSession = clientSessionManager.get(toClientId);
-        if (Objects.nonNull(toClientSession)) {
-            Future<Integer> future = toClientSession.getEndpoint()
-                    .publish(message.topicName(), message.payload(), message.qosLevel(),
+        ClientChannel toClientChannel = clientChannelManager.get(toClientId);
+        if (Objects.nonNull(toClientChannel)) {
+            Future<Integer> future = toClientChannel.publish(message.topicName(), message.payload(), message.qosLevel(),
                             false, false, messageIdService.getNextMessageId());
             // qos = 1/2 需要保存消息，确保发送到位
-            dupPublishMessageManager.put(toClientSession.getClientId(), message);
+            dupPublishMessageManager.put(toClientChannel.getClientId(), message);
             return future;
         } else {
             return Future.failedFuture(new NullPointerException("toClientSession is null toClientId : " + toClientId));
@@ -50,7 +54,7 @@ public class ExactlyOnceQosLevelMessageService implements IQosLevelMessageServic
     }
 
     @Override
-    public void publishReply(ClientSession sendSession, MqttPublishMessage message) {
-        sendSession.getEndpoint().publishRelease(message.messageId());
+    public void publishReply(ClientChannel channel, MqttPublishMessage message) {
+        channel.publishRelease(message.messageId());
     }
 }

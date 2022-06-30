@@ -1,5 +1,6 @@
 package com.iot.mqtt.message.handler;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import com.iot.mqtt.subscribe.Subscribe;
@@ -14,7 +15,21 @@ import java.util.List;
 import java.util.TreeMap;
 
 /**
+ * todo:利用mq更新订阅树！！！
  * 订阅topic
+ * 不能以 # 或者 + 开头
+ * +：当前层通配符
+ * /a/b/+
+ * /a/b/c 可以
+ * /a/b/d 可以
+ * /a/b/f 可以
+ * /a/b/c/d 不行
+ *
+ * #：所有层通配符
+ * /a/b/#
+ * /a/b/c 可以
+ * /a/b/c/d 可以
+ * /a/b/c/d/f 可以
  *
  * @author liangjiajun
  */
@@ -23,15 +38,15 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
 
     private final ISubscribeManager subscribeManager;
 
-    public SubscribeMessageHandler(ApplicationContext context, ClientSession clientSession) {
-        super(context, clientSession);
+    public SubscribeMessageHandler(ApplicationContext context, ClientChannel channel) {
+        super(context, channel);
         this.subscribeManager = context.getBean(ISubscribeManager.class);
     }
 
     @Override
     public void handle(MqttSubscribeMessage message) {
         List<MqttQoS> grantedQosLevels = new ArrayList<>();
-        String clientId = clientSession.getClientId();
+        String clientId = channel.getClientId();
         for (MqttTopicSubscription subscription : message.topicSubscriptions()) {
             MqttQoS mqttQoS = subscription.qualityOfService();
             String topicName = subscription.topicName();
@@ -40,7 +55,7 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
             subscribeManager.put(clientId, new Subscribe(clientId, topicName, mqttQoS));
         }
         // 确认订阅请求
-        clientSession.getEndpoint().subscribeAcknowledge(message.messageId(), grantedQosLevels);
+        channel.getEndpoint().subscribeAcknowledge(message.messageId(), grantedQosLevels);
     }
 
     public static void main(String[] args) {

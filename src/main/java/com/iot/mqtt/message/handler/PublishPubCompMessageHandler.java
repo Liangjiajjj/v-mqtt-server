@@ -1,5 +1,6 @@
 package com.iot.mqtt.message.handler;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
 import com.iot.mqtt.session.ClientSession;
 import io.vertx.mqtt.messages.MqttPubCompMessage;
@@ -14,14 +15,14 @@ public class PublishPubCompMessageHandler extends BaseMessageHandler<MqttPubComp
 
     private final IDupPubRelMessageManager dupPubRelMessageManager;
 
-    public PublishPubCompMessageHandler(ApplicationContext context, ClientSession clientSession) {
-        super(context, clientSession);
+    public PublishPubCompMessageHandler(ApplicationContext context, ClientChannel channel) {
+        super(context, channel);
         this.dupPubRelMessageManager = context.getBean(IDupPubRelMessageManager.class);
     }
 
     @Override
     public void handle(MqttPubCompMessage mqttPubCompMessage) {
-        log.debug("PUBCOMP - clientId: {}, messageId: {}", clientSession.getClientId(), mqttPubCompMessage.messageId());
-        dupPubRelMessageManager.remove(clientSession.getClientId(), mqttPubCompMessage.messageId());
+        log.debug("PUBCOMP - clientId: {}, messageId: {}", channel.getClientId(), mqttPubCompMessage.messageId());
+        dupPubRelMessageManager.remove(channel.getClientId(), mqttPubCompMessage.messageId());
     }
 }

@@ -1,33 +1,45 @@
 package com.iot.mqtt.session;
 
-import io.netty.util.concurrent.EventExecutor;
-import io.vertx.mqtt.MqttEndpoint;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.MqttWill;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+
+import java.util.Objects;
 
 /**
  * @author liangjiajun
  */
 @Getter
+@Builder
 @AllArgsConstructor
 public class ClientSession {
 
-    private String brokerId;
+    private final String brokerId;
 
-    private MqttEndpoint endpoint;
+    private final String clientId;
 
-    private EventExecutor executor;
+    private final MqttWill will;
 
-    public MqttWill getMqttWill() {
-        return endpoint.will();
+    private final Boolean isCleanSession;
+
+    public JsonObject toJson() {
+        JsonObject object = new JsonObject();
+        object.put("brokerId", brokerId);
+        object.put("clientId", clientId);
+        object.put("isCleanSession", getIsCleanSession());
+        if (Objects.nonNull(getWill()) && getWill().isWillFlag()) {
+            object.put("will", getWill().toJson());
+        }
+        return object;
     }
 
-    public boolean isCleanSession() {
-        return endpoint.isCleanSession();
-    }
-
-    public String getClientId() {
-        return endpoint.clientIdentifier();
+    public ClientSession fromJson(JsonObject jsonObject) {
+        String brokerId = jsonObject.getString("brokerId");
+        String clientId = jsonObject.getString("clientId");
+        Boolean isCleanSession = jsonObject.getBoolean("isCleanSession");
+        MqttWill will = new MqttWill(jsonObject.getJsonObject("will"));
+        return new ClientSession(brokerId, clientId, will, isCleanSession);
     }
 }

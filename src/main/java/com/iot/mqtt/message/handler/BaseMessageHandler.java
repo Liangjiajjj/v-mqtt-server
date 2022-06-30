@@ -1,6 +1,6 @@
 package com.iot.mqtt.message.handler;
 
-import com.iot.mqtt.session.ClientSession;
+import com.iot.mqtt.channel.ClientChannel;
 import io.vertx.core.Handler;
 import io.vertx.mqtt.messages.MqttMessage;
 import io.vertx.mqtt.messages.MqttPubCompMessage;
@@ -17,12 +17,12 @@ import org.springframework.context.ApplicationContext;
 public abstract class BaseMessageHandler<E> implements Handler<E> {
 
     protected final ApplicationContext context;
-    protected final ClientSession clientSession;
+    protected final ClientChannel channel;
 
     @Override
     public void handle(E e) {
         try {
-            clientSession.getExecutor().execute(() -> handle(e));
+            channel.getExecutor().execute(() -> handle(e));
         } catch (Throwable throwable) {
             if (e instanceof MqttMessage) {
                 log.error("MessageHandler handle error messageId {} ", ((MqttMessage) e).messageId(), throwable);

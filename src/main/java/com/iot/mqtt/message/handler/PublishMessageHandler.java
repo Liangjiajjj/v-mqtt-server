@@ -1,5 +1,6 @@
 package com.iot.mqtt.message.handler;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.session.ClientSession;
@@ -22,8 +23,8 @@ public class PublishMessageHandler extends BaseMessageHandler<MqttPublishMessage
     private final ISubscribeManager subscribeManager;
     private final IRetainMessageManager retainMessageManager;
 
-    public PublishMessageHandler(ApplicationContext context, ClientSession clientSession) {
-        super(context, clientSession);
+    public PublishMessageHandler(ApplicationContext context, ClientChannel channel) {
+        super(context, channel);
         this.subscribeManager = context.getBean(ISubscribeManager.class);
         this.retainMessageManager = context.getBean(IRetainMessageManager.class);
     }
@@ -32,19 +33,19 @@ public class PublishMessageHandler extends BaseMessageHandler<MqttPublishMessage
     public void handle(MqttPublishMessage message) {
         String topicName = message.topicName();
         if (log.isTraceEnabled()) {
-            log.trace("received clientId : {} topic : {} qoS : {} ", clientSession.getClientId(), topicName, message.qosLevel());
+            log.trace("received clientId : {} topic : {} qoS : {} ", channel.getClientId(), topicName, message.qosLevel());
         }
         // 发送到订阅消息的客户端
         Collection<Subscribe> subscribes = subscribeManager.search(topicName);
         subscribes.forEach(subscribe -> {
             // 发送消息到订阅的topic
             IQosLevelMessageService qosLevelMessageService = context.getBean(subscribe.getMqttQoS().name(), IQosLevelMessageService.class);
-            qosLevelMessageService.publish(clientSession, subscribe, message);
+            qosLevelMessageService.publish(channel, subscribe, message);
             handlerRetainMessage(message, topicName);
         });
         // 返回客户端
         IQosLevelMessageService qosLevelMessageService = context.getBean(message.qosLevel().name(), IQosLevelMessageService.class);
-        qosLevelMessageService.publishReply(clientSession, message);
+        qosLevelMessageService.publishReply(channel, message);
     }
 
     /**

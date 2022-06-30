@@ -1,5 +1,6 @@
 package com.iot.mqtt.message.qos.service;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.message.messageid.service.IMessageIdService;
 import com.iot.mqtt.session.ClientSession;
@@ -31,12 +32,11 @@ public class AtLeastOnceQosLevelMessageService implements IQosLevelMessageServic
     private IDupPublishMessageManager dupPublishMessageManager;
 
     @Override
-    public Future<Integer> publish(ClientSession sendSession, Subscribe subscribe, MqttPublishMessage message) {
+    public Future<Integer> publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
         ClientSession toClientSession = clientSessionManager.get(subscribe.getClientId());
         if (Objects.nonNull(toClientSession)) {
             log.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribe.getClientId(), subscribe.getTopicFilter(), subscribe.getMqttQoS());
-            Future<Integer> future = toClientSession.getEndpoint()
-                    .publish(message.topicName(), message.payload(), message.qosLevel(),
+            Future<Integer> future = channel.publish(message.topicName(), message.payload(), message.qosLevel(),
                             false, false, messageIdService.getNextMessageId());
             // qos = 1/2 需要保存消息，确保发送到位
             // qos 1 收到 PubAck 证明已经完成这次发送 publish 发送
@@ -48,8 +48,8 @@ public class AtLeastOnceQosLevelMessageService implements IQosLevelMessageServic
     }
 
     @Override
-    public void publishReply(ClientSession sendSession, MqttPublishMessage message) {
-        sendSession.getEndpoint().publishAcknowledge(message.messageId());
+    public void publishReply(ClientChannel channel, MqttPublishMessage message) {
+        channel.publishAcknowledge(message.messageId());
     }
 
 }

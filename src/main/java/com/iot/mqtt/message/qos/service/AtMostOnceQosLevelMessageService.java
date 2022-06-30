@@ -1,5 +1,7 @@
 package com.iot.mqtt.message.qos.service;
 
+import com.iot.mqtt.channel.ClientChannel;
+import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.message.messageid.service.IMessageIdService;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
@@ -23,23 +25,22 @@ public class AtMostOnceQosLevelMessageService implements IQosLevelMessageService
     private IMessageIdService messageIdService;
 
     @Autowired
-    private IClientSessionManager clientSessionManager;
+    private IClientChannelManager clientChannelManager;
 
     @Override
-    public Future<Integer> publish(ClientSession sendSession, Subscribe subscribe, MqttPublishMessage message) {
-        ClientSession toClientSession = clientSessionManager.get(subscribe.getClientId());
-        if (Objects.nonNull(toClientSession)) {
+    public Future<Integer> publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
+        ClientChannel toClientChannel = clientChannelManager.get(subscribe.getClientId());
+        if (Objects.nonNull(toClientChannel)) {
             log.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribe.getClientId(), subscribe.getTopicFilter(), subscribe.getMqttQoS());
-            return toClientSession.getEndpoint()
-                    .publish(message.topicName(), message.payload(), message.qosLevel(),
-                            false, false, messageIdService.getNextMessageId());
+            return toClientChannel.publish(message.topicName(), message.payload(), message.qosLevel(),
+                    false, false, messageIdService.getNextMessageId());
         } else {
             return Future.failedFuture(new NullPointerException("toClientSession is null toClientId : " + subscribe.getClientId()));
         }
     }
 
     @Override
-    public void publishReply(ClientSession sendSession, MqttPublishMessage message) {
+    public void publishReply(ClientChannel channel, MqttPublishMessage message) {
 
     }
 }

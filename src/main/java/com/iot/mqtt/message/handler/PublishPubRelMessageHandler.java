@@ -1,5 +1,6 @@
 package com.iot.mqtt.message.handler;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.message.dup.DupPubRelMessage;
 import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
@@ -21,23 +22,23 @@ public class PublishPubRelMessageHandler extends BaseMessageHandler<MqttPubRelMe
 
     private final IDupPubRelMessageManager dupPubRelMessageManager;
 
-    public PublishPubRelMessageHandler(ApplicationContext context, ClientSession clientSession) {
-        super(context, clientSession);
+    public PublishPubRelMessageHandler(ApplicationContext context, ClientChannel channel) {
+        super(context, channel);
         this.dupPublishMessageManager = context.getBean(IDupPublishMessageManager.class);
         this.dupPubRelMessageManager = context.getBean(IDupPubRelMessageManager.class);
     }
 
     @Override
     public void handle(MqttPubRelMessage mqttPubRelMessage) {
-        log.debug("PUBREL - clientId: {}, messageId: {}", clientSession.getClientId(), mqttPubRelMessage.messageId());
+        log.debug("PUBREL - clientId: {}, messageId: {}", channel.getClientId(), mqttPubRelMessage.messageId());
         // 收到应答包，删除重试消息
-        dupPublishMessageManager.remove(clientSession.getClientId(), mqttPubRelMessage.messageId());
+        dupPublishMessageManager.remove(channel.getClientId(), mqttPubRelMessage.messageId());
         // 加入重新确认列表
-        dupPubRelMessageManager.put(clientSession.getClientId(), DupPubRelMessage.builder()
+        dupPubRelMessageManager.put(channel.getClientId(), DupPubRelMessage.builder()
                 .messageId(mqttPubRelMessage.messageId())
-                .clientId(clientSession.getClientId()).build());
+                .clientId(channel.getClientId()).build());
         // PUCREC
-        clientSession.getEndpoint().publishReceived(mqttPubRelMessage.messageId());
+        channel.getEndpoint().publishReceived(mqttPubRelMessage.messageId());
     }
 
 }
