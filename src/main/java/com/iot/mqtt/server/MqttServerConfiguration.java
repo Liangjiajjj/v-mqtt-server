@@ -3,6 +3,8 @@ package com.iot.mqtt.server;
 import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.message.handler.ConnectMessageHandler;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.mqtt.MqttServer;
 import io.vertx.mqtt.MqttServerOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Slf4j
 @Configuration
-public class MqttServer {
+public class MqttServerConfiguration {
 
     @Autowired
     private MqttConfig mqttConfig;
@@ -23,10 +25,11 @@ public class MqttServer {
 
     @Bean
     public void server() {
+        VertxOptions vertxOptions = new VertxOptions().setEventLoopPoolSize(mqttConfig.getIoThreadCount());
         MqttServerOptions options = new MqttServerOptions()
                 .setPort(mqttConfig.getPort())
                 .setSsl(mqttConfig.getSsl());
-        io.vertx.mqtt.MqttServer mqttServer = io.vertx.mqtt.MqttServer.create(Vertx.vertx(), options);
+        MqttServer mqttServer = io.vertx.mqtt.MqttServer.create(Vertx.vertx(vertxOptions), options);
         mqttServer.endpointHandler(connectMessageHandler).listen((result -> {
             if (result.succeeded()) {
                 log.info("MQTT server is listening on port {} ", result.result().actualPort());

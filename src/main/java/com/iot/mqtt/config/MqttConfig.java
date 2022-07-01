@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MqttConfig {
 
+    @Value("${mqtt.io_thread_count}")
+    private Integer ioThreadCount;
+
     @Value("${mqtt.session_thread_count}")
     private Integer sessionThreadCount;
 
