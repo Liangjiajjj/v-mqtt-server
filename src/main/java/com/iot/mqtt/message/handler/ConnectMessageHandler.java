@@ -113,7 +113,7 @@ public class ConnectMessageHandler implements Handler<MqttEndpoint> {
             }
             // 关闭之前的链接
             try {
-                Optional.of(clientChannelManager.get(clientId)).ifPresent(ClientChannel::close);
+                Optional.ofNullable(clientChannelManager.get(clientId)).ifPresent(ClientChannel::close);
             } catch (Exception e) {
                 log.error("关闭链接异常 clientId :" + clientId, e);
             }
@@ -146,6 +146,7 @@ public class ConnectMessageHandler implements Handler<MqttEndpoint> {
         endpoint.publishHandler(new PublishMessageHandler(context, channel));
         endpoint.disconnectMessageHandler(new DisconnectMessageHandler(context, channel));
         endpoint.closeHandler(new CloseMessageHandler(context, channel));
+        endpoint.pingHandler(new PingHandler(context,channel));
         /**
          * 假如QoS级别是1(最多一次)，端点需要去处理来自客户端的PUBACK消息，为了收到最后的确认消息。可以使用publishAcknowledgeHandler方法。
          */

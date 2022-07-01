@@ -38,7 +38,7 @@ public class PublishPubRelMessageHandler extends BaseMessageHandler<MqttPubRelMe
                 .messageId(mqttPubRelMessage.messageId())
                 .clientId(channel.getClientId()).build());
         // PUCREC
-        channel.getEndpoint().publishReceived(mqttPubRelMessage.messageId());
+        channel.publishReceived(mqttPubRelMessage.messageId());
     }
 
 }

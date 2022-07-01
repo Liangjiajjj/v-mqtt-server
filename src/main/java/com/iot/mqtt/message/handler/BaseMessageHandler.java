@@ -1,6 +1,9 @@
 package com.iot.mqtt.message.handler;
 
 import com.iot.mqtt.channel.ClientChannel;
+import com.iot.mqtt.constant.CommonConstant;
+import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.Handler;
 import io.vertx.mqtt.messages.MqttMessage;
 import io.vertx.mqtt.messages.MqttPubCompMessage;
@@ -34,6 +37,16 @@ public abstract class BaseMessageHandler<E> implements Handler<E> {
                 log.error("MessageHandler handle error", throwable);
             }
         }
+    }
+
+    /**
+     * 根据不同的MqttQoS，有不同的发送策略
+     *
+     * @param mqttQoS
+     * @return
+     */
+    protected IQosLevelMessageService getQosLevelMessageService(MqttQoS mqttQoS) {
+        return context.getBean(mqttQoS.name() + CommonConstant.QOS_LEVEL_MESSAGE_SERVICE, IQosLevelMessageService.class);
     }
 
 }

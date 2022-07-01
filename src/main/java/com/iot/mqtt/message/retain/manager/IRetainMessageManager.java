@@ -11,22 +11,22 @@ public interface IRetainMessageManager {
     /**
      * 存储retain标志消息
      */
-    void put(String topic, MqttPublishMessage retainMessageStore);
+    void put(String topicFilter, MqttPublishMessage retainMessageStore);
 
     /**
      * 获取retain消息
      */
-    MqttPublishMessage get(String topic);
+    MqttPublishMessage get(String topicFilter);
 
     /**
      * 删除retain标志消息
      */
-    void remove(String topic);
+    void remove(String topicFilter);
 
     /**
      * 判断指定topic的retain消息是否存在
      */
-    boolean containsKey(String topic);
+    boolean containsKey(String topicFilter);
 
     /**
      * 获取retain消息集合

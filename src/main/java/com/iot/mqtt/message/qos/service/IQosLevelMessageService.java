@@ -19,7 +19,10 @@ public interface IQosLevelMessageService {
      */
     Future<Integer> publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message);
 
+    void sendRetainMessage(ClientChannel channel, String topicName);
+
     default void publishReply(ClientChannel channel, MqttPublishMessage message) {
 
     }
+
 }

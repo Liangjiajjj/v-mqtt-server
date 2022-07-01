@@ -1,11 +1,13 @@
 package com.iot.mqtt.message.handler;
 
 import com.iot.mqtt.channel.ClientChannel;
+import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import com.iot.mqtt.subscribe.Subscribe;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -39,14 +41,15 @@ public class PublishMessageHandler extends BaseMessageHandler<MqttPublishMessage
         Collection<Subscribe> subscribes = subscribeManager.search(topicName);
         subscribes.forEach(subscribe -> {
             // 发送消息到订阅的topic
-            IQosLevelMessageService qosLevelMessageService = context.getBean(subscribe.getMqttQoS().name(), IQosLevelMessageService.class);
+            IQosLevelMessageService qosLevelMessageService = getQosLevelMessageService(message.qosLevel());
             qosLevelMessageService.publish(channel, subscribe, message);
             handlerRetainMessage(message, topicName);
         });
         // 返回客户端
-        IQosLevelMessageService qosLevelMessageService = context.getBean(message.qosLevel().name(), IQosLevelMessageService.class);
+        IQosLevelMessageService qosLevelMessageService = getQosLevelMessageService(message.qosLevel());
         qosLevelMessageService.publishReply(channel, message);
     }
+
 
     /**
      * 如果客户端发送给服务端 publish 报文保留（RETAIN）为1，服务端必须保存这个消息和它对应的质量等级（QOS）

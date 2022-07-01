@@ -5,30 +5,36 @@ import io.vertx.mqtt.MqttWill;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author liangjiajun
  */
 @Getter
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class ClientSession {
 
-    private final String brokerId;
+    private String brokerId;
 
-    private final String clientId;
+    private String clientId;
 
-    private final MqttWill will;
+    private int expire;
 
-    private final Boolean isCleanSession;
+    private MqttWill will;
+
+    private Boolean isCleanSession;
 
     public JsonObject toJson() {
         JsonObject object = new JsonObject();
         object.put("brokerId", brokerId);
         object.put("clientId", clientId);
-        object.put("isCleanSession", getIsCleanSession());
+        object.put("expire", expire);
+        object.put("isCleanSession", isCleanSession);
         if (Objects.nonNull(getWill()) && getWill().isWillFlag()) {
             object.put("will", getWill().toJson());
         }
@@ -38,8 +44,9 @@ public class ClientSession {
     public ClientSession fromJson(JsonObject jsonObject) {
         String brokerId = jsonObject.getString("brokerId");
         String clientId = jsonObject.getString("clientId");
+        Integer expire = jsonObject.getInteger("expire", 0);
         Boolean isCleanSession = jsonObject.getBoolean("isCleanSession");
-        MqttWill will = new MqttWill(jsonObject.getJsonObject("will"));
-        return new ClientSession(brokerId, clientId, will, isCleanSession);
+        MqttWill will = Optional.ofNullable(jsonObject.getJsonObject("will")).map(MqttWill::new).orElse(null);
+        return new ClientSession(brokerId, clientId, expire, will, isCleanSession);
     }
 }

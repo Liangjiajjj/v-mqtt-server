@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 /**
  * 客户端链接(session与channel隔离)
  */
@@ -35,20 +37,30 @@ public class ClientChannel {
         endpoint.close();
     }
 
-    public Future<Integer> publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return Future.failedFuture(" connect close !!! ");
-        }
-        return endpoint.publish(topic, payload, qosLevel, isDup, isRetain);
-    }
-
+    /**
+     * 广播出去，有可能是不是自己的服务器
+     * @param topic
+     * @param payload
+     * @param qosLevel
+     * @param isDup
+     * @param isRetain
+     * @param messageId
+     * @return
+     */
     public Future<Integer> publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId) {
         if (!endpoint.isConnected()) {
             log.error("connect close !!! clientId {} ", clientId);
             return Future.failedFuture(" connect close !!! ");
         }
         return endpoint.publish(topic, payload, qosLevel, isDup, isRetain, messageId);
+    }
+
+    public Future<Integer> publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain) {
+        if (!endpoint.isConnected()) {
+            log.error("connect close !!! clientId {} ", clientId);
+            return Future.failedFuture(" connect close !!! ");
+        }
+        return endpoint.publish(topic, payload, qosLevel, isDup, isRetain);
     }
 
     public void unsubscribeAcknowledge(int messageId) {
@@ -73,5 +85,21 @@ public class ClientChannel {
             return;
         }
         endpoint.publishRelease(messageId);
+    }
+
+    public void subscribeAcknowledge(int messageId, List<MqttQoS> qosLevels) {
+        if (!endpoint.isConnected()) {
+            log.error("connect close !!! clientId {} ", clientId);
+            return;
+        }
+        endpoint.subscribeAcknowledge(messageId, qosLevels);
+    }
+
+    public void publishReceived(int messageId) {
+        if (!endpoint.isConnected()) {
+            log.error("connect close !!! clientId {} ", clientId);
+            return;
+        }
+        endpoint.publishReceived(messageId);
     }
 }

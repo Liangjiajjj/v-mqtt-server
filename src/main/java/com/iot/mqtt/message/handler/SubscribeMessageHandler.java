@@ -1,9 +1,8 @@
 package com.iot.mqtt.message.handler;
 
 import com.iot.mqtt.channel.ClientChannel;
-import com.iot.mqtt.session.ClientSession;
-import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import com.iot.mqtt.subscribe.Subscribe;
+import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.mqtt.MqttTopicSubscription;
 import io.vertx.mqtt.messages.MqttSubscribeMessage;
@@ -12,7 +11,6 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 
 /**
  * todo:利用mq更新订阅树！！！
@@ -24,7 +22,7 @@ import java.util.TreeMap;
  * /a/b/d 可以
  * /a/b/f 可以
  * /a/b/c/d 不行
- *
+ * <p>
  * #：所有层通配符
  * /a/b/#
  * /a/b/c 可以
@@ -52,13 +50,14 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
             String topicName = subscription.topicName();
             log.debug("Subscription ClientId {} for {} with QoS  {}", clientId, topicName, mqttQoS);
             grantedQosLevels.add(mqttQoS);
-            subscribeManager.put(clientId, new Subscribe(clientId, topicName, mqttQoS));
+            subscribeManager.put(clientId, new Subscribe(clientId, topicName, mqttQoS.value()));
         }
         // 确认订阅请求
-        channel.getEndpoint().subscribeAcknowledge(message.messageId(), grantedQosLevels);
+        channel.subscribeAcknowledge(message.messageId(), grantedQosLevels);
+        // 发布保留消息
+        for (MqttTopicSubscription subscription : message.topicSubscriptions()) {
+            getQosLevelMessageService(subscription.qualityOfService()).sendRetainMessage(channel, subscription.topicName());
+        }
     }
 
-    public static void main(String[] args) {
-        TreeMap<String,String> map = new TreeMap<>();
-    }
 }

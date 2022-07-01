@@ -5,10 +5,41 @@ import lombok.Getter;
 @Getter
 public enum RedisKeyConstant {
 
-    CLIENT_SESSION(RedisKeyConstant.MQTT_SERVER_PRE + "session:%s")
-    ,;
+    /**
+     * 会话缓存
+     */
+    CLIENT_SESSION_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "session:%s"),
+    /**
+     * 订阅列表
+     */
+    SUBSCRIBE_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "subscribe:%s"),
+    /**
+     * 订阅列表set
+     */
+    SUBSCRIBE_SET_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "subscribe:set:%s"),
+    /**
+     * 遗愿消息
+     */
+    RETAIN_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "retain_message"),
+    /**
+     * 消息id
+     */
+    MESSAGE_ID_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "messageId"),
+    /**
+     * qos1
+     */
+    DUP_PUBLISH_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "duppublish:%s"),
+    /**
+     * qos2
+     */
+    DUP_PUBREL_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "duppubrel:%s"),
+    /**
+     * 转发队列
+     */
+    RELAY_MESSAGE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "relay_message_topic:%s")
+    ;
 
-    private String key;
+    private final String key;
 
     RedisKeyConstant(String key) {
         this.key = key;
@@ -16,7 +47,7 @@ public enum RedisKeyConstant {
 
     public final static String MQTT_SERVER_PRE = "mqtt-server:";
 
-    public String getRedisKey(String... obj) {
+    public String getKey(String... obj) {
         return String.format(key, obj);
     }
 

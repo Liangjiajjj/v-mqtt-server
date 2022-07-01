@@ -1,9 +1,9 @@
 package com.iot.mqtt.subscribe;
 
-import io.netty.handler.codec.mqtt.MqttQoS;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * 订阅topic
@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode
+@NoArgsConstructor
 @AllArgsConstructor
 public class Subscribe {
 
@@ -26,6 +27,6 @@ public class Subscribe {
     /**
      * 服务质量
      */
-    private MqttQoS mqttQoS;
+    private Integer mqttQoS;
 
 }

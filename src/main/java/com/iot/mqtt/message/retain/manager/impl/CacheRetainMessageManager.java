@@ -1,12 +1,15 @@
-package com.iot.mqtt.message.retain.manager;
+package com.iot.mqtt.message.retain.manager.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
 import io.vertx.mqtt.messages.MqttPublishMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -43,6 +46,8 @@ public class CacheRetainMessageManager implements IRetainMessageManager {
 
     @Override
     public List<MqttPublishMessage> search(String topicFilter) {
-        return Collections.singletonList(TOPIC_TO_RETAIN_MESSAGE_MAP.get(topicFilter));
+        return Optional.ofNullable(TOPIC_TO_RETAIN_MESSAGE_MAP.get(topicFilter))
+                .map(Collections::singletonList)
+                .orElse(Collections.EMPTY_LIST);
     }
 }
