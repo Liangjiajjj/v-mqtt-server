@@ -8,6 +8,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
 import java.util.Collection;
 
 /**
@@ -23,7 +24,7 @@ public class RedisDupPubRelMessageManager implements IDupPubRelMessageManager {
     @Override
     public void put(String clientId, DupPubRelMessage publishMessage) {
         int messageId = publishMessage.getMessageId();
-        getRMap(clientId).put(clientId.concat("_").concat(String.valueOf(messageId)), publishMessage);
+        getRMap(clientId).put(String.valueOf(messageId), publishMessage);
     }
 
     @Override
@@ -33,7 +34,7 @@ public class RedisDupPubRelMessageManager implements IDupPubRelMessageManager {
 
     @Override
     public void remove(String clientId, int messageId) {
-        getRMap(clientId).remove(messageId);
+        getRMap(clientId).remove(String.valueOf(messageId));
     }
 
     @Override

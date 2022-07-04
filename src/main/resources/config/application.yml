@@ -1,7 +1,9 @@
 mqtt :
   port : 1833
   ssl : false
-  session_thread_count : 8
+  io_thread_count : 16
+  session_thread_count: 16
+
   broker :
     id : 1
     ssl : false

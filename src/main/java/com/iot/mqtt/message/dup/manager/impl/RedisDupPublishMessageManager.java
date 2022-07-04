@@ -26,8 +26,7 @@ public class RedisDupPublishMessageManager implements IDupPublishMessageManager 
     @Override
     public void put(String clientId, MqttPublishMessage publishMessage) {
         int messageId = publishMessage.messageId();
-        getRMap(clientId).put(clientId.concat("_").concat(String.valueOf(messageId)),
-                PublishMessageStore.fromMessage(clientId, publishMessage));
+        getRMap(clientId).put(String.valueOf(messageId), PublishMessageStore.fromMessage(clientId, publishMessage));
     }
 
     @Override
@@ -37,7 +36,7 @@ public class RedisDupPublishMessageManager implements IDupPublishMessageManager 
 
     @Override
     public void remove(String clientId, int messageId) {
-        getRMap(clientId).remove(messageId);
+        getRMap(clientId).remove(String.valueOf(messageId));
     }
 
     @Override

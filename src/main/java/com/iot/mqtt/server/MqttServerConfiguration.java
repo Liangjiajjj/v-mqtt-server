@@ -29,7 +29,7 @@ public class MqttServerConfiguration {
         MqttServerOptions options = new MqttServerOptions()
                 .setPort(mqttConfig.getPort())
                 .setSsl(mqttConfig.getSsl());
-        MqttServer mqttServer = io.vertx.mqtt.MqttServer.create(Vertx.vertx(vertxOptions), options);
+        MqttServer mqttServer = MqttServer.create(Vertx.vertx(vertxOptions), options);
         mqttServer.endpointHandler(connectMessageHandler).listen((result -> {
             if (result.succeeded()) {
                 log.info("MQTT server is listening on port {} ", result.result().actualPort());
