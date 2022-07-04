@@ -27,9 +27,9 @@ public class CacheClientSessionManager implements IClientSessionManager {
     @Override
     public ClientSession register(String brokerId, MqttEndpoint endpoint) {
         String clientId = endpoint.clientIdentifier();
-        int expire = Math.round(endpoint.keepAliveTimeSeconds() * 1.5f);
+        int keepAliveTimeout = (int) Math.ceil(endpoint.keepAliveTimeSeconds() * 1.5D);
         ClientSession clientSession = ClientSession.builder().brokerId(brokerId)
-                .expire(expire)
+                .expire(keepAliveTimeout)
                 .clientId(clientId)
                 .isCleanSession(endpoint.isCleanSession())
                 .will(endpoint.will()).build();

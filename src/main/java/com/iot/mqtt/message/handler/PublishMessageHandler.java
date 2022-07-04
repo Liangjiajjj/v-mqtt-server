@@ -12,6 +12,7 @@ import io.vertx.mqtt.messages.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 /**
@@ -35,7 +36,7 @@ public class PublishMessageHandler extends BaseMessageHandler<MqttPublishMessage
     public void handle(MqttPublishMessage message) {
         String topicName = message.topicName();
         if (log.isTraceEnabled()) {
-            log.trace("received clientId : {} topic : {} qoS : {} ", channel.getClientId(), topicName, message.qosLevel());
+            log.trace("received clientId : {} topic : {} qoS : {} message : {}", channel.getClientId(), topicName, message.qosLevel(), new String(message.payload().getBytes(), StandardCharsets.UTF_8));
         }
         // 发送到订阅消息的客户端
         Collection<Subscribe> subscribes = subscribeManager.search(topicName);

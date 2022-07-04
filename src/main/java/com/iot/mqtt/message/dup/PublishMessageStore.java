@@ -40,6 +40,6 @@ public class PublishMessageStore {
     }
 
     public MqttPublishMessage toMessage() {
-        return MqttPublishMessage.create(messageId, MqttQoS.valueOf(messageId), false, false, topic, Unpooled.copiedBuffer(messageBytes));
+        return MqttPublishMessage.create(messageId, MqttQoS.valueOf(mqttQoS), false, false, topic, Unpooled.copiedBuffer(messageBytes));
     }
 }

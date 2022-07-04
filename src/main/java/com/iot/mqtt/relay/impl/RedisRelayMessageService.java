@@ -52,7 +52,9 @@ public class RedisRelayMessageService implements IRelayMessageService {
     @Override
     public void relayMessage(String brokerId, String clientId, int messageId, MqttPublishMessage message) {
         RTopic topic = redissonClient.getTopic(RedisKeyConstant.RELAY_MESSAGE_TOPIC.getKey(brokerId));
-        topic.publish(PublishMessageStore.fromMessage(clientId, message));
+        PublishMessageStore messageStore = PublishMessageStore.fromMessage(clientId, message);
+        messageStore.setMessageId(messageId);
+        topic.publish(messageStore);
     }
 
 }
