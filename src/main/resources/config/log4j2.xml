@@ -34,7 +34,7 @@
 	</Appenders>
 
 	<Loggers>
-		<logger name="com.iot.mqtt" level="debug"
+		<logger name="com.iot.mqtt" level="trace"
 				includeLocation="true" additivity="false">
 			<appender-ref ref="FileLog" />
 			<appender-ref ref="Console" />

@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Slf4j
@@ -37,7 +38,7 @@ public class RedisRelayMessageService implements IRelayMessageService {
             String clientId = msg.getClientId();
             int messageId = msg.getMessageId();
             if (log.isTraceEnabled()) {
-                log.trace("receive relay message clientId:{} , messageId:{} ", clientId, messageId);
+                log.trace("receive relay message clientId:{} , messageId:{} , message {}", clientId, messageId, new String(msg.getMessageBytes(), StandardCharsets.UTF_8));
             }
             ClientChannel clientChannel = clientChannelManager.get(clientId);
             if (Objects.isNull(clientChannel)) {

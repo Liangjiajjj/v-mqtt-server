@@ -15,7 +15,7 @@ public class MqttClientTest {
     public void test() {
         MqttClientOptions options = new MqttClientOptions();
         MqttClient client = MqttClient.create(Vertx.vertx(), options);
-        Future<MqttConnAckMessage> future = client.connect(1833, "127.0.0.1");
+        Future<MqttConnAckMessage> future = client.connect(8000, "127.0.0.1");
         client.publishHandler(s -> {
             System.out.println("There are new message in topic: " + s.topicName());
             System.out.println("Content(as string) of the message: " + s.payload().toString());

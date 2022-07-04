@@ -1,14 +1,20 @@
 mqtt :
-  port : 1833
+  port : 1834
   ssl : false
   io_thread_count : 16
   session_thread_count: 16
 
   broker :
-    id : 1
+    id : 2
     ssl : false
     password_must : false
     cluster_enabled: true
 
 logging:
   config: classpath:config/log4j2.xml
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - dev
