@@ -1,7 +1,7 @@
 package com.iot.mqtt.message.retain.manager;
 
-import io.vertx.mqtt.messages.MqttPublishMessage;
 
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import java.util.List;
 
 /**

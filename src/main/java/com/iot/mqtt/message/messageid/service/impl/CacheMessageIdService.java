@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "false")
 public class CacheMessageIdService implements IMessageIdService {
 
     private final AtomicInteger messageId = new AtomicInteger();

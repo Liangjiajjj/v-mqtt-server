@@ -1,6 +1,7 @@
 package com.iot.mqtt.message.dup.manager;
 
-import io.vertx.mqtt.messages.MqttPublishMessage;
+
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.util.Collection;
 

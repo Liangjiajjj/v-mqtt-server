@@ -1,8 +1,8 @@
 package com.iot.mqtt.message.dup;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.mqtt.MqttQoS;
-import io.vertx.mqtt.messages.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,18 +28,27 @@ public class PublishMessageStore {
     private byte[] messageBytes;
 
     public static PublishMessageStore fromMessage(MqttPublishMessage message) {
-        return PublishMessageStore.builder().messageId(message.messageId())
-                .topic(message.topicName()).mqttQoS(message.qosLevel().value())
-                .messageBytes(message.payload().getBytes()).build();
+        byte[] messageBytes = new byte[message.payload().readableBytes()];
+        message.payload().getBytes(message.payload().readerIndex(), messageBytes);
+        return PublishMessageStore.builder().messageId(message.variableHeader().messageId())
+                .topic(message.variableHeader().topicName()).mqttQoS(message.fixedHeader().qosLevel().value())
+                .messageBytes(messageBytes).build();
     }
 
     public static PublishMessageStore fromMessage(String clientId, MqttPublishMessage message) {
-        return PublishMessageStore.builder().clientId(clientId).messageId(message.messageId())
-                .topic(message.topicName()).mqttQoS(message.qosLevel().value())
-                .messageBytes(message.payload().getBytes()).build();
+        byte[] messageBytes = new byte[message.payload().readableBytes()];
+        message.payload().getBytes(message.payload().readerIndex(), messageBytes);
+        return PublishMessageStore.builder().clientId(clientId).messageId(message.variableHeader().messageId())
+                .topic(message.variableHeader().topicName()).mqttQoS(message.fixedHeader().qosLevel().value())
+                .messageBytes(messageBytes).build();
     }
 
     public MqttPublishMessage toMessage() {
-        return MqttPublishMessage.create(messageId, MqttQoS.valueOf(mqttQoS), false, false, topic, Unpooled.copiedBuffer(messageBytes));
+        MqttFixedHeader fixedHeader =
+                new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(mqttQoS), false, 0);
+        MqttPublishVariableHeader variableHeader =
+                new MqttPublishVariableHeader(topic, messageId, MqttProperties.NO_PROPERTIES);
+        ByteBuf buf = Unpooled.copiedBuffer(messageBytes);
+        return (MqttPublishMessage) MqttMessageFactory.newMessage(fixedHeader, variableHeader, buf);
     }
 }

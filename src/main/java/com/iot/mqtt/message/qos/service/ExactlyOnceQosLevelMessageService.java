@@ -1,19 +1,12 @@
 package com.iot.mqtt.message.qos.service;
 
 import com.iot.mqtt.channel.ClientChannel;
-import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
-import com.iot.mqtt.message.messageid.service.IMessageIdService;
-import com.iot.mqtt.session.ClientSession;
-import com.iot.mqtt.session.manager.IClientSessionManager;
 import com.iot.mqtt.subscribe.Subscribe;
-import io.vertx.core.Future;
-import io.vertx.mqtt.messages.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 /**
  * 暂时不支持qos
@@ -32,16 +25,15 @@ public class ExactlyOnceQosLevelMessageService extends BaseQosLevelMessageServic
     private IDupPublishMessageManager dupPublishMessageManager;
 
     @Override
-    public Future<Integer> publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
+    public void publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
         String toClientId = subscribe.getClientId();
-        Future<Integer> future = publish0(toClientId, message);
+        publish0(toClientId, message);
         // qos = 1/2 需要保存消息，确保发送到位
         dupPublishMessageManager.put(toClientId, message);
-        return future;
     }
 
     @Override
     public void publishReply(ClientChannel channel, MqttPublishMessage message) {
-        channel.publishRelease(message.messageId());
+        channel.publishRelease(message.variableHeader().messageId());
     }
 }

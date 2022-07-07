@@ -3,7 +3,7 @@ package com.iot.mqtt.message.dup.manager.impl;
 import com.iot.mqtt.constant.RedisKeyConstant;
 import com.iot.mqtt.message.dup.PublishMessageStore;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
-import io.vertx.mqtt.messages.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "true")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
 public class RedisDupPublishMessageManager implements IDupPublishMessageManager {
 
     @Autowired
@@ -25,7 +25,7 @@ public class RedisDupPublishMessageManager implements IDupPublishMessageManager 
 
     @Override
     public void put(String clientId, MqttPublishMessage publishMessage) {
-        int messageId = publishMessage.messageId();
+        int messageId = publishMessage.variableHeader().messageId();
         getRMap(clientId).put(String.valueOf(messageId), PublishMessageStore.fromMessage(clientId, publishMessage));
     }
 

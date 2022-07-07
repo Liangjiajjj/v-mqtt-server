@@ -1,8 +1,7 @@
 package com.iot.mqtt.session.manager;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.session.ClientSession;
-import io.netty.util.concurrent.EventExecutor;
-import io.vertx.mqtt.MqttEndpoint;
 
 /**
  * @author liangjiajun
@@ -11,7 +10,7 @@ public interface IClientSessionManager {
     /**
      * 存储会话
      */
-    ClientSession register(String brokerId, MqttEndpoint endpoint);
+    ClientSession register(String brokerId, ClientChannel clientChannel,int expire);
 
     /**
      * 设置session失效时间

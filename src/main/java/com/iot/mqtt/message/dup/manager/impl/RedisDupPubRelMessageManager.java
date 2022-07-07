@@ -15,7 +15,7 @@ import java.util.Collection;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "true")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
 public class RedisDupPubRelMessageManager implements IDupPubRelMessageManager {
 
     @Autowired

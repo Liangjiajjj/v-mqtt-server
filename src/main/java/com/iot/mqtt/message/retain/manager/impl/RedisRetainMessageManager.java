@@ -4,23 +4,22 @@ import cn.hutool.core.util.StrUtil;
 import com.iot.mqtt.constant.RedisKeyConstant;
 import com.iot.mqtt.message.dup.PublishMessageStore;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
-import com.iot.mqtt.subscribe.Subscribe;
-import io.vertx.mqtt.messages.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "true")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
 public class RedisRetainMessageManager implements IRetainMessageManager {
 
     @Autowired

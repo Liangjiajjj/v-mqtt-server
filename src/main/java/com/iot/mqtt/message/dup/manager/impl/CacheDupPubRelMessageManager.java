@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "false")
 public class CacheDupPubRelMessageManager implements IDupPubRelMessageManager {
 
     private final static ConcurrentHashMap<String, ConcurrentHashMap<Integer, DupPubRelMessage>> CLIENT_ID_TO_DUP_PUB_REL_MESSAGE_MAP = new ConcurrentHashMap<>();

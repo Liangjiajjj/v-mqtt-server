@@ -13,7 +13,7 @@ import java.io.IOException;
  * @author liangjiajun
  */
 @Configuration
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "true")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
 public class RedissonConfig {
     @Bean
     public RedissonClient redisson() throws IOException {

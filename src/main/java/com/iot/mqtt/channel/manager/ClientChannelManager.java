@@ -1,10 +1,6 @@
 package com.iot.mqtt.channel.manager;
 
 import com.iot.mqtt.channel.ClientChannel;
-import io.netty.channel.EventLoop;
-import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.EventExecutor;
-import io.vertx.mqtt.MqttEndpoint;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -16,12 +12,10 @@ public class ClientChannelManager implements IClientChannelManager {
     private final Map<String, ClientChannel> clientChannelMap = new ConcurrentHashMap<>();
 
     @Override
-    public ClientChannel put(MqttEndpoint endpoint, EventExecutor executor) {
-        String clientId = endpoint.clientIdentifier();
-        ClientChannel channel = ClientChannel.builder().clientId(clientId)
-                                .endpoint(endpoint).executor(executor).build();
-        clientChannelMap.put(clientId, channel);
-        return channel;
+    public ClientChannel put(ClientChannel clientChannel) {
+        String clientId = clientChannel.clientIdentifier();
+        clientChannelMap.put(clientId, clientChannel);
+        return clientChannel;
     }
 
     @Override

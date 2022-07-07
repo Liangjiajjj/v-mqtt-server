@@ -1,13 +1,16 @@
-package com.iot.mqtt.message.handler;
+package com.iot.mqtt.message.handler.message;
 
 import com.iot.mqtt.channel.ClientChannel;
+import com.iot.mqtt.constant.CommonConstant;
+import com.iot.mqtt.message.handler.base.BaseMessageHandler;
 import com.iot.mqtt.subscribe.Subscribe;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import io.vertx.mqtt.MqttTopicSubscription;
-import io.vertx.mqtt.messages.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,20 +35,19 @@ import java.util.List;
  * @author liangjiajun
  */
 @Slf4j
+@Service(value = "SUBSCRIBE" + CommonConstant.MQTT_MESSAGE_HANDLER)
 public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMessage> {
 
-    private final ISubscribeManager subscribeManager;
-
-    public SubscribeMessageHandler(ApplicationContext context, ClientChannel channel) {
-        super(context, channel);
-        this.subscribeManager = context.getBean(ISubscribeManager.class);
-    }
+    @Autowired
+    private ISubscribeManager subscribeManager;
 
     @Override
-    public void handle(MqttSubscribeMessage message) {
+    public void handle0(ClientChannel clientChannel, MqttSubscribeMessage message) {
+        String clientId = clientChannel.clientIdentifier();
         List<MqttQoS> grantedQosLevels = new ArrayList<>();
-        String clientId = channel.getClientId();
-        for (MqttTopicSubscription subscription : message.topicSubscriptions()) {
+        int messageId = message.variableHeader().messageId();
+        List<MqttTopicSubscription> subscriptions = message.payload().topicSubscriptions();
+        for (MqttTopicSubscription subscription : subscriptions) {
             MqttQoS mqttQoS = subscription.qualityOfService();
             String topicName = subscription.topicName();
             log.debug("Subscription ClientId {} for {} with QoS  {}", clientId, topicName, mqttQoS);
@@ -53,11 +55,10 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
             subscribeManager.put(clientId, new Subscribe(clientId, topicName, mqttQoS.value()));
         }
         // 确认订阅请求
-        channel.subscribeAcknowledge(message.messageId(), grantedQosLevels);
+        clientChannel.subscribeAcknowledge(messageId, grantedQosLevels);
         // 发布保留消息
-        for (MqttTopicSubscription subscription : message.topicSubscriptions()) {
-            getQosLevelMessageService(subscription.qualityOfService()).sendRetainMessage(channel, subscription.topicName());
+        for (MqttTopicSubscription subscription : subscriptions) {
+            getQosLevelMessageService(subscription.qualityOfService()).sendRetainMessage(clientChannel, subscription.topicName());
         }
     }
-
 }

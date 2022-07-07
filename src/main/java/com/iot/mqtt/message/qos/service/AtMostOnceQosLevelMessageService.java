@@ -3,8 +3,7 @@ package com.iot.mqtt.message.qos.service;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.subscribe.Subscribe;
-import io.vertx.core.Future;
-import io.vertx.mqtt.messages.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +15,10 @@ import org.springframework.stereotype.Service;
 public class AtMostOnceQosLevelMessageService extends BaseQosLevelMessageService {
 
     @Override
-    public Future<Integer> publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
+    public void publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
         String toClientId = subscribe.getClientId();
         log.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribe.getClientId(), subscribe.getTopicFilter(), subscribe.getMqttQoS());
-        return publish0(toClientId, message);
+        publish0(toClientId, message);
     }
 
     @Override

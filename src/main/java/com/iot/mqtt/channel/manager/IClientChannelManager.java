@@ -1,17 +1,13 @@
 package com.iot.mqtt.channel.manager;
 
 import com.iot.mqtt.channel.ClientChannel;
-import io.netty.channel.EventLoop;
-import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.EventExecutor;
-import io.vertx.mqtt.MqttEndpoint;
 
 public interface IClientChannelManager {
 
     /**
      * 存储会话
      */
-    ClientChannel put(MqttEndpoint endpoint, EventExecutor executor);
+    ClientChannel put(ClientChannel clientChannel);
 
     /**
      * 设置session失效时间

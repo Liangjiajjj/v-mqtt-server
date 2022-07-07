@@ -1,14 +1,18 @@
 mqtt :
+  id : 1
+  host:
   port : 1833
   ssl : false
-  io_thread_count : 16
-  session_thread_count: 16
-
-  broker :
-    id : 1
-    ssl : false
-    password_must : false
-    cluster_enabled: true
+  ssl_password: 1017941200
+  cluster_enabled: true
+  password_must: false
+  work_threads: 16
+  boss_io_threads: 1
+  worker_io_threads: 16
+  use_epoll: false
+  keep_alive : 60
+  so_backlog : 511
+  so_keep_alive : true
 
 logging:
   config: classpath:config/log4j2.xml

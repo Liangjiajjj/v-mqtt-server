@@ -1,6 +1,7 @@
 package com.iot.mqtt.relay;
 
-import io.vertx.mqtt.messages.MqttPublishMessage;
+
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 public interface IRelayMessageService {
     /**

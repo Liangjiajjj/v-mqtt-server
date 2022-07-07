@@ -21,7 +21,7 @@ import java.util.Optional;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "true")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
 public class RedisSubscribeManager implements ISubscribeManager {
 
     @Autowired

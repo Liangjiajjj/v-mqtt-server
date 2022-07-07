@@ -1,105 +1,74 @@
 package com.iot.mqtt.channel;
 
-import io.netty.channel.EventLoop;
+import com.alibaba.fastjson.JSONObject;
+import com.iot.mqtt.message.handler.base.IHandler;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.EventExecutor;
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.mqtt.MqttEndpoint;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * 客户端链接(session与channel隔离)
  */
-@Slf4j
-@Getter
-@Builder
-@AllArgsConstructor
-public class ClientChannel {
 
-    private final String clientId;
+public interface ClientChannel {
 
-    private final MqttEndpoint endpoint;
+    ClientChannel accept();
 
-    private final EventExecutor executor;
+    ClientChannel accept(boolean sessionPresent);
 
-    public boolean isCleanSession() {
-        return endpoint.isCleanSession();
-    }
+    ClientChannel accept(boolean sessionPresent, MqttProperties properties);
 
-    public void close() {
-        endpoint.close();
-    }
+    ClientChannel reject(MqttConnectReturnCode returnCode);
 
-    /**
-     * 广播出去，有可能是不是自己的服务器
-     * @param topic
-     * @param payload
-     * @param qosLevel
-     * @param isDup
-     * @param isRetain
-     * @param messageId
-     * @return
-     */
-    public Future<Integer> publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return Future.failedFuture(" connect close !!! ");
-        }
-        return endpoint.publish(topic, payload, qosLevel, isDup, isRetain, messageId);
-    }
+    ClientChannel reject(MqttConnectReturnCode returnCode, MqttProperties properties);
 
-    public Future<Integer> publish(String topic, Buffer payload, MqttQoS qosLevel, boolean isDup, boolean isRetain) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return Future.failedFuture(" connect close !!! ");
-        }
-        return endpoint.publish(topic, payload, qosLevel, isDup, isRetain);
-    }
+    ClientChannel subscribeAcknowledge(int subscribeMessageId, List<MqttQoS> grantedQoSLevels);
 
-    public void unsubscribeAcknowledge(int messageId) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return;
-        }
-        endpoint.unsubscribeAcknowledge(messageId);
-    }
+    ClientChannel unsubscribeAcknowledge(int unsubscribeMessageId);
 
-    public void publishAcknowledge(int messageId) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return;
-        }
-        endpoint.publishAcknowledge(messageId);
-    }
+    ClientChannel publishAcknowledge(int publishMessageId);
 
-    public void publishRelease(int messageId) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return;
-        }
-        endpoint.publishRelease(messageId);
-    }
+    ClientChannel publishReceived(int publishMessageId);
 
-    public void subscribeAcknowledge(int messageId, List<MqttQoS> qosLevels) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return;
-        }
-        endpoint.subscribeAcknowledge(messageId, qosLevels);
-    }
+    ClientChannel publishRelease(int publishMessageId);
 
-    public void publishReceived(int messageId) {
-        if (!endpoint.isConnected()) {
-            log.error("connect close !!! clientId {} ", clientId);
-            return;
-        }
-        endpoint.publishReceived(messageId);
-    }
+    ClientChannel publishComplete(int publishMessageId);
+
+    void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain);
+
+    void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId);
+
+    void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties);
+
+    ClientChannel pong();
+
+    // ClientChannel disconnect(MqttDisconnectReasonCode code, MqttProperties properties);
+
+    Executor getExecutor();
+
+    void close();
+
+    String clientIdentifier();
+
+    MqttAuth auth();
+
+    MqttWill will();
+
+    int protocolVersion();
+
+    boolean isCleanSession();
+
+    int keepAliveTimeSeconds();
+
+    ClientChannel closeHandler(IHandler<Void> closeHandler);
+
+    Channel getChannel();
+
+    void handleClosed();
+
+    JSONObject toJson();
 }

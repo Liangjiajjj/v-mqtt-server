@@ -2,15 +2,15 @@ package com.iot.mqtt.message.qos.service;
 
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.manager.IClientChannelManager;
-import com.iot.mqtt.config.BrokerConfig;
+import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.message.messageid.service.IMessageIdService;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.relay.IRelayMessageService;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
-import io.vertx.core.Future;
-import io.vertx.mqtt.messages.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Objects;
@@ -19,7 +19,7 @@ import java.util.Objects;
 public abstract class BaseQosLevelMessageService implements IQosLevelMessageService {
 
     @Autowired
-    private BrokerConfig brokerConfig;
+    private MqttConfig mqttConfig;
 
     @Autowired
     private IMessageIdService messageIdService;
@@ -37,37 +37,41 @@ public abstract class BaseQosLevelMessageService implements IQosLevelMessageServ
     private IClientChannelManager clientChannelManager;
 
     @Override
-    public void sendRetainMessage(ClientChannel channel, String topicName) {
+    public void sendRetainMessage(ClientChannel clientChannel, String topicName) {
         for (MqttPublishMessage message : retainMessageManager.search(topicName)) {
-            publish0(channel.getClientId(), message);
+            publish0(clientChannel.clientIdentifier(), message);
         }
     }
 
-    protected Future<Integer> publish0(String toClientId, MqttPublishMessage message) {
+    protected void publish0(String toClientId, MqttPublishMessage message) {
         ClientSession session = clientSessionManager.get(toClientId);
         if (Objects.isNull(session)) {
-            return Future.failedFuture("session is null !!!");
+            log.error("publish0 session toClientId {} is null", toClientId);
+            return;
         }
         String brokerId = session.getBrokerId();
         int messageId = messageIdService.getNextMessageId();
         // 不是在本机内的链接，转发
-        if (!brokerConfig.getBrokerId().equals(brokerId)) {
+        if (!mqttConfig.getBrokerId().equals(brokerId)) {
             if (log.isTraceEnabled()) {
                 log.trace("relay message brokerId:{} , clientId:{} , messageId:{} ", brokerId, toClientId, messageId);
             }
             relayMessageService.relayMessage(brokerId, toClientId, messageId, message);
-            return Future.failedFuture("relay message brokerId : " + brokerId);
+            return;
         }
         // 延长存活时间
         clientSessionManager.expire(toClientId, session.getExpire());
         ClientChannel channel = clientChannelManager.get(toClientId);
         if (Objects.isNull(channel)) {
-            return Future.failedFuture("channel is null !!!");
+            log.error("publish0 channel toClientId {} is null", toClientId);
+            return;
         }
         if (log.isTraceEnabled()) {
             log.trace("publish message brokerId:{} , clientId:{} , messageId:{} ", brokerId, toClientId, messageId);
         }
-        return channel.publish(message.topicName(), message.payload(), message.qosLevel(), false, false, messageId);
+        byte[] messageBytes = new byte[message.payload().readableBytes()];
+        message.payload().getBytes(message.payload().readerIndex(), messageBytes);
+        channel.publish(message.variableHeader().topicName(), messageBytes, message.fixedHeader().qosLevel(), false, false, messageId);
     }
 
 }

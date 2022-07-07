@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "false")
 public class CacheSubscribeManager implements ISubscribeManager {
     /**
      * 订阅 列表

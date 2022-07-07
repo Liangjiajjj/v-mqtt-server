@@ -2,7 +2,7 @@ package com.iot.mqtt.message.retain.manager.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
-import io.vertx.mqtt.messages.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "false")
 public class CacheRetainMessageManager implements IRetainMessageManager {
 
     private final Map<String, MqttPublishMessage> TOPIC_TO_RETAIN_MESSAGE_MAP = new ConcurrentHashMap<>();

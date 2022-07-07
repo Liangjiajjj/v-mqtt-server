@@ -1,9 +1,8 @@
 package com.iot.mqtt.session.manager.impl;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
-import io.netty.util.concurrent.EventExecutor;
-import io.vertx.mqtt.MqttEndpoint;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.broker.cluster_enabled", havingValue = "false")
+@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "false")
 public class CacheClientSessionManager implements IClientSessionManager {
 
     /**
@@ -25,14 +24,14 @@ public class CacheClientSessionManager implements IClientSessionManager {
     private final static Map<String, ClientSession> CLIENT_SESSION_MAP = new ConcurrentHashMap<>();
 
     @Override
-    public ClientSession register(String brokerId, MqttEndpoint endpoint) {
-        String clientId = endpoint.clientIdentifier();
-        int keepAliveTimeout = (int) Math.ceil(endpoint.keepAliveTimeSeconds() * 1.5D);
+    public ClientSession register(String brokerId, ClientChannel channel, int expire) {
+        String clientId = channel.clientIdentifier();
+        int keepAliveTimeout = (int) Math.ceil(channel.keepAliveTimeSeconds() * 1.5D);
         ClientSession clientSession = ClientSession.builder().brokerId(brokerId)
                 .expire(keepAliveTimeout)
                 .clientId(clientId)
-                .isCleanSession(endpoint.isCleanSession())
-                .will(endpoint.will()).build();
+                .isCleanSession(channel.isCleanSession())
+                .will(channel.will()).build();
         CLIENT_SESSION_MAP.put(clientId, clientSession);
         return clientSession;
     }

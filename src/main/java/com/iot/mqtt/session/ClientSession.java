@@ -1,7 +1,7 @@
 package com.iot.mqtt.session;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.mqtt.MqttWill;
+import com.alibaba.fastjson.JSONObject;
+import com.iot.mqtt.channel.MqttWill;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,8 +29,8 @@ public class ClientSession {
 
     private Boolean isCleanSession;
 
-    public JsonObject toJson() {
-        JsonObject object = new JsonObject();
+    public JSONObject toJson() {
+        JSONObject object = new JSONObject();
         object.put("brokerId", brokerId);
         object.put("clientId", clientId);
         object.put("expire", expire);
@@ -41,12 +41,12 @@ public class ClientSession {
         return object;
     }
 
-    public ClientSession fromJson(JsonObject jsonObject) {
+    public ClientSession fromJson(JSONObject jsonObject) {
         String brokerId = jsonObject.getString("brokerId");
         String clientId = jsonObject.getString("clientId");
-        Integer expire = jsonObject.getInteger("expire", 0);
+        Integer expire = jsonObject.getInteger("expire");
         Boolean isCleanSession = jsonObject.getBoolean("isCleanSession");
-        MqttWill will = Optional.ofNullable(jsonObject.getJsonObject("will")).map(MqttWill::new).orElse(null);
+        MqttWill will = Optional.ofNullable(jsonObject.getJSONObject("will")).map(MqttWill::new).orElse(null);
         return new ClientSession(brokerId, clientId, expire, will, isCleanSession);
     }
 }

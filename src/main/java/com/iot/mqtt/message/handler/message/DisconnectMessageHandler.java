@@ -1,50 +1,53 @@
-package com.iot.mqtt.message.handler;
+package com.iot.mqtt.message.handler.message;
 
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.manager.IClientChannelManager;
+import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
+import com.iot.mqtt.message.handler.base.BaseMessageHandler;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
-import io.vertx.mqtt.messages.MqttDisconnectMessage;
+import io.netty.handler.codec.mqtt.MqttMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * @author liangjiajun
  */
 @Slf4j
-public class DisconnectMessageHandler extends BaseMessageHandler<MqttDisconnectMessage> {
+@Service(value = "DISCONNECT" + CommonConstant.MQTT_MESSAGE_HANDLER)
+public class DisconnectMessageHandler extends BaseMessageHandler<MqttMessage> {
 
+    @Autowired
     private IClientSessionManager clientSessionManager;
 
+    @Autowired
     private IClientChannelManager clientChannelManager;
 
+    @Autowired
     private ISubscribeManager subscribeManager;
 
+    @Autowired
     private IDupPublishMessageManager dupPublishMessageManager;
 
+    @Autowired
     private IDupPubRelMessageManager dupPubRelMessageManager;
 
-    public DisconnectMessageHandler(ApplicationContext context, ClientChannel clientSession) {
-        super(context, clientSession);
-        this.clientSessionManager = context.getBean(IClientSessionManager.class);
-        this.clientChannelManager = context.getBean(IClientChannelManager.class);
-        this.subscribeManager = context.getBean(ISubscribeManager.class);
-        this.dupPublishMessageManager = context.getBean(IDupPublishMessageManager.class);
-        this.dupPubRelMessageManager = context.getBean(IDupPubRelMessageManager.class);
-    }
-
     @Override
-    public void handle(MqttDisconnectMessage disconnectMessage) {
-        String clientId = channel.getClientId();
-        if (channel.isCleanSession()) {
+    public void handle0(ClientChannel channel, MqttMessage mqttMessage) {
+        String clientId = channel.clientIdentifier();
+        ClientSession clientSession = clientSessionManager.get(clientId);
+        if (Objects.nonNull(clientSession) && clientSession.getIsCleanSession()) {
             subscribeManager.removeForClient(clientId);
             dupPublishMessageManager.removeByClient(clientId);
             dupPubRelMessageManager.removeByClient(clientId);
         }
-        log.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, channel.isCleanSession());
+        log.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, clientSession.getIsCleanSession());
         clientSessionManager.remove(clientId);
         clientChannelManager.remove(clientId);
         channel.close();
