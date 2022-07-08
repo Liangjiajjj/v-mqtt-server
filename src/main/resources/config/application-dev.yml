@@ -1,8 +1,8 @@
-mqtt :
-  id : 2
+mqtt:
+  id: 2
   host:
-  port : 1834
-  ssl : false
+  port: 1834
+  ssl: false
   ssl_password: 1017941200
   cluster_enabled: true
   password_must: false
@@ -10,9 +10,15 @@ mqtt :
   boss_io_threads: 1
   worker_io_threads: 16
   use_epoll: false
-  keep_alive : 60
-  so_backlog : 511
-  so_keep_alive : true
+  keep_alive: 60
+  so_backlog: 511
+  so_keep_alive: true
 
 logging:
   config: classpath:config/log4j2.xml
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - dev

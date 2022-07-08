@@ -16,7 +16,7 @@ public enum RedisKeyConstant {
     /**
      * 订阅列表set
      */
-    SUBSCRIBE_SET_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "subscribe:set:%s"),
+    SUBSCRIBE_SET_KEY(RedisKeyConstant.MQTT_SERVER_PRE + "subscribe_set:%s"),
     /**
      * 遗愿消息
      */
@@ -36,7 +36,11 @@ public enum RedisKeyConstant {
     /**
      * 转发队列
      */
-    RELAY_MESSAGE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "relay_message_topic:%s")
+    RELAY_MESSAGE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "relay_message_topic:%s"),
+    /**
+     * 同步订阅主题
+     */
+    SYN_SUBSCRIBE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "syn_subscribe_topic")
     ;
 
     private final String key;

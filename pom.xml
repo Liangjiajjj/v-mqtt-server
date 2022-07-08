@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>com.iot.mqtt</groupId>
     <artifactId>v-mqtt-server</artifactId>
@@ -15,6 +15,12 @@
     <properties>
         <java.version>1.8</java.version>
         <netty.version>4.1.77.Final</netty.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <pulsar-spring-boot-starter.version>1.0.0</pulsar-spring-boot-starter.version>
+        <fastjson.version>1.2.83</fastjson.version>
+        <lombok.version>1.16.20</lombok.version>
+        <hutool.version>5.8.1</hutool.version>
+        <redisson.version>3.13.6</redisson.version>
     </properties>
     <dependencies>
         <dependency>
@@ -37,20 +43,27 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
-      <!--  <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-mqtt</artifactId>
-            <version>4.3.1</version>
+       <!-- <dependency>
+            <groupId>io.github.mingyifei</groupId>
+            <artifactId>pulsar-spring-boot-starter</artifactId>
+            <version>${pulsar-spring-boot-starter.version}</version>
         </dependency>-->
+
+        <!--  <dependency>
+              <groupId>io.vertx</groupId>
+              <artifactId>vertx-mqtt</artifactId>
+              <version>4.3.1</version>
+          </dependency>-->
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-mqtt</artifactId>
             <version>${netty.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http</artifactId>
@@ -73,19 +86,26 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.83</version>
+            <version>${fastjson.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.20</version>
+            <version>${lombok.version}</version>
         </dependency>
+
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-crypto</artifactId>
-            <version>5.8.1</version>
+            <version>${hutool.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>${redisson.version}</version>
         </dependency>
 
         <dependency>
@@ -99,6 +119,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <!--引入JUnit4-->
         <dependency>
             <groupId>junit</groupId>
@@ -115,12 +136,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
-            <version>3.13.6</version>
         </dependency>
 
     </dependencies>

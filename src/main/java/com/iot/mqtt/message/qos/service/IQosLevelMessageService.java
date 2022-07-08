@@ -1,10 +1,8 @@
 package com.iot.mqtt.message.qos.service;
 
 import com.iot.mqtt.channel.ClientChannel;
-import com.iot.mqtt.subscribe.Subscribe;
+import com.iot.mqtt.subscribe.topic.Subscribe;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
-
-import java.util.concurrent.Future;
 
 /**
  * @author liangjiajun

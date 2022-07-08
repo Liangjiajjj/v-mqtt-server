@@ -45,9 +45,6 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
     private MqttConfig mqttConfig;
 
     @Autowired
-    private ApplicationContext context;
-
-    @Autowired
     private IAuthService authService;
 
     @Autowired
@@ -80,46 +77,48 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
     @Override
     public void handle(Channel channel, MqttConnectMessage mqttConnectMessage) {
         ClientChannel clientChannel = new ClientChannelImpl(channel, sessionExecutors.next(), mqttConnectMessage);
-        clientChannel.getExecutor().execute(() -> {
-            try {
-                String clientId = clientChannel.clientIdentifier();
-                // clientId为空或null的情况, 这里要求客户端必须提供clientId, 不管cleanSession是否为1, 此处没有参考标准协议实现
-                if (StrUtil.isBlank(clientId)) {
-                    clientChannel.reject(MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED);
-                    clientChannel.close();
+        clientChannel.getExecutor().execute(() -> handleConnect(clientChannel, mqttConnectMessage));
+    }
+
+    private void handleConnect(ClientChannel clientChannel, MqttConnectMessage mqttConnectMessage) {
+        try {
+            String clientId = clientChannel.clientIdentifier();
+            // clientId为空或null的情况, 这里要求客户端必须提供clientId, 不管cleanSession是否为1, 此处没有参考标准协议实现
+            if (StrUtil.isBlank(clientId)) {
+                clientChannel.reject(MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED);
+                clientChannel.close();
+                return;
+            }
+            if (mqttConfig.getPasswordMust()) {
+                // 用户名和密码验证, 这里要求客户端连接时必须提供用户名和密码, 不管是否设置用户名标志和密码标志为1, 此处没有参考标准协议实现
+                MqttAuth auth = clientChannel.auth();
+                String username = auth.getUsername();
+                String password = auth.getPassword();
+                if (!authService.checkValid(username, password)) {
+                    clientChannel.reject(MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD);
                     return;
                 }
-                if (mqttConfig.getPasswordMust()) {
-                    // 用户名和密码验证, 这里要求客户端连接时必须提供用户名和密码, 不管是否设置用户名标志和密码标志为1, 此处没有参考标准协议实现
-                    MqttAuth auth = clientChannel.auth();
-                    String username = auth.getUsername();
-                    String password = auth.getPassword();
-                    if (!authService.checkValid(username, password)) {
-                        clientChannel.reject(MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD);
-                        return;
-                    }
-                }
-                String brokerId = mqttConfig.getBrokerId();
-                // 处理链接与相关信息
-                this.handlerConnect(clientChannel);
-                // 处理连接心跳包
-                int expire = this.handlerIdleState(clientChannel);
-                // 保存到 clientChannelManager
-                clientChannelManager.put(clientChannel);
-                // 注册到 clientSessionManager
-                clientSessionManager.register(brokerId, clientChannel, expire);
-                channel.attr(AttributeKey.valueOf("clientId")).set(clientId);
-                // 建立链接
-                clientChannel.accept(false);
-                log.info("CONNECT - threadName {}, clientId: {}, cleanSession: {}", Thread.currentThread().getName(), clientId, clientChannel.isCleanSession());
-                // 如果cleanSession不为0, 需要重发同一clientId存储的未完成的QoS1和QoS2的DUP消息
-                this.handleQosMessage(clientChannel);
-            } catch (Throwable throwable) {
-                log.error("connect fail !!! clientId {}", clientChannel.clientIdentifier(), throwable);
-            } finally {
-                ReferenceCountUtil.release(mqttConnectMessage);
             }
-        });
+            String brokerId = mqttConfig.getBrokerId();
+            // 处理链接与相关信息
+            this.handlerConnect(clientChannel);
+            // 处理连接心跳包
+            int expire = this.handlerIdleState(clientChannel);
+            // 保存到 clientChannelManager
+            clientChannelManager.put(clientChannel);
+            // 注册到 clientSessionManager
+            clientSessionManager.register(brokerId, clientChannel, expire);
+            clientChannel.getChannel().attr(AttributeKey.valueOf("clientId")).set(clientId);
+            // 建立链接
+            clientChannel.accept(false);
+            log.info("CONNECT - threadName {}, clientId: {}, cleanSession: {}", Thread.currentThread().getName(), clientId, clientChannel.isCleanSession());
+            // 如果cleanSession不为0, 需要重发同一clientId存储的未完成的QoS1和QoS2的DUP消息
+            this.handleQosMessage(clientChannel);
+        } catch (Throwable throwable) {
+            log.error("connect fail !!! clientId {}", clientChannel.clientIdentifier(), throwable);
+        } finally {
+            ReferenceCountUtil.release(mqttConnectMessage);
+        }
     }
 
     private int handlerIdleState(ClientChannel clientChannel) {

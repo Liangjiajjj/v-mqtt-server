@@ -3,7 +3,7 @@ package com.iot.mqtt.message.qos.service;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
-import com.iot.mqtt.subscribe.Subscribe;
+import com.iot.mqtt.subscribe.topic.Subscribe;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

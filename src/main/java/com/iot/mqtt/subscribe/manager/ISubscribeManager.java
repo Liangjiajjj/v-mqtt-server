@@ -1,6 +1,6 @@
 package com.iot.mqtt.subscribe.manager;
 
-import com.iot.mqtt.subscribe.Subscribe;
+import com.iot.mqtt.subscribe.topic.Subscribe;
 
 import java.util.Collection;
 
@@ -12,12 +12,12 @@ public interface ISubscribeManager {
     /**
      * 存储订阅
      */
-    void put(String topicFilter, Subscribe subscribeStore);
+    void add(Subscribe subscribe);
 
     /**
      * 删除订阅
      */
-    void remove(String topicFilter, String clientId);
+    void remove(Subscribe subscribe);
 
     /**
      * 删除clientId的订阅

@@ -3,7 +3,7 @@ package com.iot.mqtt.message.handler.message;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.handler.base.BaseMessageHandler;
-import com.iot.mqtt.subscribe.Subscribe;
+import com.iot.mqtt.subscribe.topic.Subscribe;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * todo:利用mq更新订阅树！！！
+ * 利用mq更新订阅树！！！
  * 订阅topic
  * 不能以 # 或者 + 开头
  * +：当前层通配符
@@ -52,7 +52,7 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
             String topicName = subscription.topicName();
             log.debug("Subscription ClientId {} for {} with QoS  {}", clientId, topicName, mqttQoS);
             grantedQosLevels.add(mqttQoS);
-            subscribeManager.put(clientId, new Subscribe(clientId, topicName, mqttQoS.value()));
+            subscribeManager.add(Subscribe.builder().clientId(clientId).topicFilter(topicName).mqttQoS(mqttQoS.value()).build());
         }
         // 确认订阅请求
         clientChannel.subscribeAcknowledge(messageId, grantedQosLevels);

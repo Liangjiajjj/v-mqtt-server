@@ -1,40 +1,43 @@
+/*
 package com.iot.mqtt.subscribe.manager.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.iot.mqtt.constant.RedisKeyConstant;
-import com.iot.mqtt.subscribe.Subscribe;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
+import com.iot.mqtt.subscribe.topic.Subscribe;
 import org.redisson.api.RMap;
 import org.redisson.api.RSet;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
+*/
 /**
  * 订阅管理
  *
  * @author liangjiajun
- */
+ *//*
+
 @Service
-@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
+@ConditionalOnExpression("${mqtt.cluster_enabled:true}&&${mqtt.wild_car:false}")
 public class RedisSubscribeManager implements ISubscribeManager {
 
     @Autowired
     private RedissonClient redissonClient;
 
     @Override
-    public void put(String clientId, Subscribe subscribeStore) {
-        String topicFilter = subscribeStore.getTopicFilter();
+    public void put(String clientId, Subscribe subscribe) {
+        String topicFilter = subscribe.getTopicFilter();
         if (StrUtil.contains(topicFilter, '#') || StrUtil.contains(topicFilter, '+')) {
             throw new RuntimeException("暂时不支持表达式 topic !!!");
         }
-        getRMap(subscribeStore.getTopicFilter()).put(clientId, subscribeStore);
-        getRSet(clientId).add(subscribeStore.getTopicFilter());
+        getRMap(subscribe.getTopicFilter()).put(clientId, subscribe);
+        getRSet(clientId).add(subscribe.getTopicFilter());
     }
 
     @Override
@@ -66,3 +69,4 @@ public class RedisSubscribeManager implements ISubscribeManager {
         return redissonClient.getSet(RedisKeyConstant.SUBSCRIBE_SET_KEY.getKey(clientId));
     }
 }
+*/

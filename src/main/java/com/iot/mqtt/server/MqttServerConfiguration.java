@@ -1,8 +1,6 @@
 package com.iot.mqtt.server;
 
 import com.iot.mqtt.config.MqttConfig;
-import com.iot.mqtt.config.MqttConfig;
-import com.iot.mqtt.message.handler.message.ConnectMessageHandler;
 import com.iot.mqtt.message.handler.MqttMessageHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -32,7 +30,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 
 /**
  * @author liangjiajun
