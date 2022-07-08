@@ -77,10 +77,11 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
     @Override
     public void handle(Channel channel, MqttConnectMessage mqttConnectMessage) {
         ClientChannel clientChannel = new ClientChannelImpl(channel, sessionExecutors.next(), mqttConnectMessage);
-        clientChannel.getExecutor().execute(() -> handleConnect(clientChannel, mqttConnectMessage));
+        clientChannel.getExecutor().execute(() -> handle0(clientChannel, mqttConnectMessage));
     }
 
-    private void handleConnect(ClientChannel clientChannel, MqttConnectMessage mqttConnectMessage) {
+    @Override
+    public void handle0(ClientChannel clientChannel, MqttConnectMessage mqttConnectMessage) {
         try {
             String clientId = clientChannel.clientIdentifier();
             // clientId为空或null的情况, 这里要求客户端必须提供clientId, 不管cleanSession是否为1, 此处没有参考标准协议实现
