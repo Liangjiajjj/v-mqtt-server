@@ -25,7 +25,6 @@ public class RedisClientSessionManager implements IClientSessionManager {
 
     @Autowired
     private RedissonClient redissonClient;
-    // todo：本地内存
 
     @Override
     public ClientSession register(String brokerId, ClientChannel clientChannel, int expire) {
