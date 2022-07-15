@@ -1,20 +1,13 @@
-package com.iot.mqtt.message.handler.message;
+package com.iot.mqtt.message.handler.message.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.iot.mqtt.auth.IAuthService;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.ClientChannelImpl;
 import com.iot.mqtt.channel.MqttAuth;
-import com.iot.mqtt.channel.manager.IClientChannelManager;
-import com.iot.mqtt.config.MqttConfig;
-import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.dup.DupPubRelMessage;
-import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
-import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.message.handler.base.BaseMessageHandler;
-import com.iot.mqtt.session.manager.IClientSessionManager;
-import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
@@ -26,7 +19,6 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -42,25 +34,7 @@ import java.util.Optional;
 public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage> {
 
     @Autowired
-    private MqttConfig mqttConfig;
-
-    @Autowired
     private IAuthService authService;
-
-    @Autowired
-    private ISubscribeManager subscribeManager;
-
-    @Autowired
-    private IClientSessionManager clientSessionManager;
-
-    @Autowired
-    private IClientChannelManager clientChannelManager;
-
-    @Autowired
-    private IDupPublishMessageManager dupPublishMessageManager;
-
-    @Autowired
-    private IDupPubRelMessageManager dupPubRelMessageManager;
 
     /**
      * 业务线程池
@@ -140,9 +114,7 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
             // 重新链接，清空所有有关信息
             if (clientChannel.isCleanSession()) {
                 clientSessionManager.remove(clientId);
-                subscribeManager.removeForClient(clientId);
-                dupPubRelMessageManager.removeByClient(clientId);
-                dupPublishMessageManager.removeByClient(clientId);
+                removeForClient(clientId);
             }
             // 关闭之前的链接
             try {
@@ -152,9 +124,7 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
             }
         } else {
             // 如果之前没有链接，清空信息即可
-            subscribeManager.removeForClient(clientId);
-            dupPubRelMessageManager.removeByClient(clientId);
-            dupPublishMessageManager.removeByClient(clientId);
+            removeForClient(clientId);
         }
     }
 

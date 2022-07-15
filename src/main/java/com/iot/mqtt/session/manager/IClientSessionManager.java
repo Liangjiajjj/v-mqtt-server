@@ -10,7 +10,7 @@ public interface IClientSessionManager {
     /**
      * 存储会话
      */
-    ClientSession register(String brokerId, ClientChannel clientChannel,int expire);
+    ClientSession register(String brokerId, ClientChannel clientChannel, int expire);
 
     /**
      * 设置session失效时间
@@ -31,4 +31,5 @@ public interface IClientSessionManager {
      * 删除会话
      */
     void remove(String clientId);
+
 }

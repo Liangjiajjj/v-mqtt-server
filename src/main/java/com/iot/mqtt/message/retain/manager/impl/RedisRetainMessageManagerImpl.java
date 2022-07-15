@@ -4,6 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import com.iot.mqtt.constant.RedisKeyConstant;
 import com.iot.mqtt.message.dup.PublishMessageStore;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
+import com.iot.mqtt.redis.RedisBaseService;
+import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
@@ -20,42 +22,36 @@ import java.util.Optional;
  */
 @Service
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
-public class RedisRetainMessageManager implements IRetainMessageManager {
-
-    @Autowired
-    private RedissonClient redissonClient;
+public class RedisRetainMessageManagerImpl extends RedisBaseServiceImpl<PublishMessageStore> implements IRetainMessageManager, RedisBaseService<PublishMessageStore> {
 
     @Override
     public void put(String topicFilter, MqttPublishMessage retainMessage) {
         if (StrUtil.contains(topicFilter, '#') || StrUtil.contains(topicFilter, '+')) {
             throw new RuntimeException("暂时不支持表达式 topic !!!");
         }
-        getRMap().put(topicFilter, PublishMessageStore.fromMessage(retainMessage));
+        putMap(RedisKeyConstant.RETAIN_KEY.getKey(), topicFilter, PublishMessageStore.fromMessage(retainMessage));
     }
 
     @Override
     public MqttPublishMessage get(String topicFilter) {
-        return getRMap().get(topicFilter).toMessage();
+        return getMapValue(RedisKeyConstant.RETAIN_KEY.getKey(), topicFilter).toMessage();
     }
 
     @Override
     public void remove(String topicFilter) {
-        getRMap().remove(topicFilter);
+        removeMap(RedisKeyConstant.RETAIN_KEY.getKey(), topicFilter);
     }
 
     @Override
     public boolean containsKey(String topicFilter) {
-        return getRMap().containsKey(topicFilter);
+        return getMap(RedisKeyConstant.RETAIN_KEY.getKey()).containsKey(topicFilter);
     }
 
     @Override
     public List<MqttPublishMessage> search(String topicFilter) {
-        return Optional.ofNullable(getRMap().get(topicFilter))
+        return Optional.ofNullable(getMapValue(RedisKeyConstant.RETAIN_KEY.getKey(), topicFilter))
                 .map(Collections::singletonList)
                 .orElse(Collections.EMPTY_LIST);
     }
 
-    private RMap<String, PublishMessageStore> getRMap() {
-        return redissonClient.getMap(RedisKeyConstant.RETAIN_KEY.getKey());
-    }
 }

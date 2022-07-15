@@ -5,6 +5,7 @@ import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.message.messageid.service.IMessageIdService;
 import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
+import com.iot.mqtt.redis.annotation.RedisBatch;
 import com.iot.mqtt.relay.IRelayMessageService;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;

@@ -19,11 +19,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
-public class RedisMessageIdService implements IMessageIdService {
+public class RedisMessageIdServiceImpl implements IMessageIdService {
 
     @Autowired
     private RedissonClient redissonClient;
 
+    @Override
     public int getNextMessageId() {
         try {
             while (true) {

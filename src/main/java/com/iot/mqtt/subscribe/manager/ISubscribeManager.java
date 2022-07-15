@@ -1,6 +1,8 @@
 package com.iot.mqtt.subscribe.manager;
 
+import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.subscribe.topic.Subscribe;
+import io.netty.handler.codec.mqtt.*;
 
 import java.util.Collection;
 
@@ -28,4 +30,34 @@ public interface ISubscribeManager {
      * 获取订阅存储集
      */
     Collection<Subscribe> search(String topic);
+
+    /**
+     * @param clientChannel
+     * @param message
+     */
+    void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message);
+
+    /**
+     *
+     * @param clientId
+     * @param message
+     */
+    default void addSubscriptions(String clientId, MqttSubscribeMessage message) {
+        for (MqttTopicSubscription subscription : message.payload().topicSubscriptions()) {
+            MqttQoS mqttQoS = subscription.qualityOfService();
+            String topicName = subscription.topicName();
+            add(Subscribe.builder().clientId(clientId).topicFilter(topicName).mqttQoS(mqttQoS.value()).build());
+        }
+    }
+
+    /**
+     *
+     * @param clientId
+     * @param message
+     */
+    default void removeSubscriptions(String clientId, MqttUnsubscribeMessage message) {
+        for (String topicName : message.payload().topics()) {
+            remove(Subscribe.builder().clientId(clientId).topicFilter(topicName).build());
+        }
+    }
 }

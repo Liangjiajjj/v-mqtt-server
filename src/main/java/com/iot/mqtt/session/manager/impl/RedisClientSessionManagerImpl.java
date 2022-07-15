@@ -3,16 +3,14 @@ package com.iot.mqtt.session.manager.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.constant.RedisKeyConstant;
+import com.iot.mqtt.redis.RedisBaseService;
+import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
-import org.redisson.api.RBucket;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * redis session
@@ -21,10 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
-public class RedisClientSessionManager implements IClientSessionManager {
-
-    @Autowired
-    private RedissonClient redissonClient;
+public class RedisClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObject> implements IClientSessionManager, RedisBaseService<JSONObject> {
 
     @Override
     public ClientSession register(String brokerId, ClientChannel clientChannel, int expire) {
@@ -34,7 +29,7 @@ public class RedisClientSessionManager implements IClientSessionManager {
                 .clientId(clientId)
                 .isCleanSession(clientChannel.isCleanSession())
                 .will(clientChannel.will()).build();
-        getRBucket(clientId).set(clientSession.toJson());
+        setBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId), clientSession.toJson());
         if (expire > 0) {
             expire(clientId, expire);
         }
@@ -43,27 +38,24 @@ public class RedisClientSessionManager implements IClientSessionManager {
 
     @Override
     public ClientSession get(String clientId) {
-        return Optional.ofNullable(getRBucket(clientId).get())
+        return Optional.ofNullable(getBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId)).get())
                 .map((json) -> new ClientSession().fromJson(json))
                 .orElse(null);
     }
 
     @Override
     public boolean containsKey(String clientId) {
-        return getRBucket(clientId).isExists();
+        return getBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId)).isExists();
     }
 
     @Override
     public void remove(String clientId) {
-        getRBucket(clientId).delete();
+        removeBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId));
     }
 
     @Override
     public void expire(String clientId, int expire) {
-        getRBucket(clientId).expire(expire, TimeUnit.SECONDS);
+        expireBucket(clientId, expire);
     }
 
-    private RBucket<JSONObject> getRBucket(String clientId) {
-        return redissonClient.getBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId));
-    }
 }

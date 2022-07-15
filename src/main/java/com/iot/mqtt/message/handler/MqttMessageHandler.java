@@ -4,7 +4,9 @@ import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.ClientChannelImpl;
 import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.constant.CommonConstant;
+import com.iot.mqtt.context.MqttServiceContext;
 import com.iot.mqtt.message.handler.base.IHandler;
+import com.iot.mqtt.redis.annotation.RedisBatch;
 import io.netty.channel.*;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleState;
@@ -18,6 +20,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+/**
+ * @author liangjiajun
+ */
 @Slf4j
 @Service
 @ChannelHandler.Sharable
@@ -28,7 +33,7 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
     }
 
     @Autowired
-    protected ApplicationContext context;
+    protected MqttServiceContext mqttServiceContext;
 
     @Autowired
     private IClientChannelManager clientChannelManager;
@@ -43,29 +48,13 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
         super.channelInactive(ctx);
     }
 
-   /* @Override
-    public void channelRead(ChannelHandlerContext ctx, Object object) {
-        // 校验版本号，协议格式出错
-        MqttMessage message = (MqttMessage) object;
-        rejectFailure(ctx, message);
-        // 解析协议
-        MqttMessageType messageType = message.fixedHeader().messageType();
-        IHandler messageHandler = getMessageHandler(messageType);
-        if (Objects.nonNull(messageHandler)) {
-            messageHandler.handle(ctx.channel(), message);
-        } else {
-            ReferenceCountUtil.release(message);
-            log.error("message handler is null type {} ", messageType.name());
-        }
-    }*/
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MqttMessage message) throws Exception {
         try {
             rejectFailure(ctx, message);
             // 解析协议
             MqttMessageType messageType = message.fixedHeader().messageType();
-            IHandler messageHandler = getMessageHandler(messageType);
+            IHandler messageHandler = mqttServiceContext.getMessageHandler(messageType);
             messageHandler.handle(ctx.channel(), message);
         } catch (Exception e) {
             ReferenceCountUtil.release(message);
@@ -75,22 +64,12 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
     }
 
     /**
-     * 根据类型选择 Handler
-     *
-     * @param messageType
-     * @return
-     */
-    private IHandler getMessageHandler(MqttMessageType messageType) {
-        return context.getBean(messageType.name() + CommonConstant.MQTT_MESSAGE_HANDLER, IHandler.class);
-    }
-
-    /**
      * 校验版本号，协议格式出错
      *
      * @param ctx
      * @param message
      */
-    private void rejectFailure(ChannelHandlerContext ctx, MqttMessage message) {
+    public void rejectFailure(ChannelHandlerContext ctx, MqttMessage message) {
         ClientChannel clientChannel = new ClientChannelImpl(ctx.channel());
         if (message.decoderResult().isFailure()) {
             Throwable cause = message.decoderResult().cause();

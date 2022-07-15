@@ -2,7 +2,7 @@
 package com.iot.mqtt.server;
 
 import com.iot.mqtt.config.MqttConfig;
-import com.iot.mqtt.message.handler.message.ConnectMessageHandler;
+import com.iot.mqtt.message.handler.message.impl.ConnectMessageHandler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.mqtt.MqttServer;

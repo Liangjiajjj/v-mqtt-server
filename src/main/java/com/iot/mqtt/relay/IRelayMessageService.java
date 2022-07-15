@@ -3,6 +3,9 @@ package com.iot.mqtt.relay;
 
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
+/**
+ * @author liangjiajun
+ */
 public interface IRelayMessageService {
     /**
      * 转发消息

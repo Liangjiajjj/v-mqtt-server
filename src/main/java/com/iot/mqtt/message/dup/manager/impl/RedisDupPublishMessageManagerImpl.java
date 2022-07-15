@@ -3,6 +3,9 @@ package com.iot.mqtt.message.dup.manager.impl;
 import com.iot.mqtt.constant.RedisKeyConstant;
 import com.iot.mqtt.message.dup.PublishMessageStore;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
+import com.iot.mqtt.redis.RedisBaseService;
+import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
+import com.iot.mqtt.subscribe.topic.Subscribe;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
@@ -18,33 +21,32 @@ import java.util.stream.Collectors;
  */
 @Service
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
-public class RedisDupPublishMessageManager implements IDupPublishMessageManager {
-
-    @Autowired
-    private RedissonClient redissonClient;
+public class RedisDupPublishMessageManagerImpl extends RedisBaseServiceImpl<PublishMessageStore> implements IDupPublishMessageManager, RedisBaseService<PublishMessageStore> {
 
     @Override
     public void put(String clientId, MqttPublishMessage publishMessage) {
         int messageId = publishMessage.variableHeader().messageId();
-        getRMap(clientId).put(String.valueOf(messageId), PublishMessageStore.fromMessage(clientId, publishMessage));
+        putMap(RedisKeyConstant.DUP_PUBLISH_KEY.getKey(clientId), String.valueOf(messageId), PublishMessageStore.fromMessage(clientId, publishMessage));
     }
 
     @Override
     public Collection<MqttPublishMessage> get(String clientId) {
-        return getRMap(clientId).values().stream().map(PublishMessageStore::toMessage).collect(Collectors.toList());
+        return getMap(RedisKeyConstant.DUP_PUBLISH_KEY.getKey(clientId)).values()
+                .stream().map(PublishMessageStore::toMessage)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void remove(String clientId, int messageId) {
-        getRMap(clientId).remove(String.valueOf(messageId));
+        removeMap(RedisKeyConstant.DUP_PUBLISH_KEY.getKey(clientId), String.valueOf(messageId));
     }
 
     @Override
     public void removeByClient(String clientId) {
-        getRMap(clientId).delete();
+        removeMap(RedisKeyConstant.DUP_PUBLISH_KEY.getKey(clientId));
     }
 
-    private RMap<String, PublishMessageStore> getRMap(String clientId) {
+/*    private RMap<String, PublishMessageStore> getRMap(String clientId) {
         return redissonClient.getMap(RedisKeyConstant.DUP_PUBLISH_KEY.getKey(clientId));
-    }
+    }*/
 }

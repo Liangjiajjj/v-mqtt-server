@@ -146,6 +146,7 @@ public class ClientChannelImpl implements ClientChannel {
         return channel.id().asLongText();
     }
 
+    @Override
     public void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId) {
         publish(topic, payload, qosLevel, isDup, isRetain, messageId, MqttProperties.NO_PROPERTIES);
     }
@@ -156,6 +157,7 @@ public class ClientChannelImpl implements ClientChannel {
     }
 
 
+    @Override
     public void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties) {
         if (messageId > MAX_MESSAGE_ID || messageId < 0) {
             throw new IllegalArgumentException("messageId must be non-negative integer not larger than " + MAX_MESSAGE_ID);
@@ -188,6 +190,7 @@ public class ClientChannelImpl implements ClientChannel {
     }
 
 
+    @Override
     public ClientChannelImpl unsubscribeAcknowledge(int unsubscribeMessageId) {
         return unsubscribeAcknowledge(unsubscribeMessageId, MqttProperties.NO_PROPERTIES);
     }
@@ -205,6 +208,7 @@ public class ClientChannelImpl implements ClientChannel {
         return this;
     }
 
+    @Override
     public ClientChannelImpl publishAcknowledge(int publishMessageId) {
         MqttPubAckMessage puback = (MqttPubAckMessage) MqttMessageFactory.newMessage(
                 new MqttFixedHeader(MqttMessageType.PUBACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
@@ -213,6 +217,7 @@ public class ClientChannelImpl implements ClientChannel {
         return this;
     }
 
+    @Override
     public ClientChannelImpl publishRelease(int publishMessageId) {
         return publishRelease(publishMessageId, MqttProperties.NO_PROPERTIES);
     }
@@ -305,6 +310,7 @@ public class ClientChannelImpl implements ClientChannel {
     }
 
 
+    @Override
     public ClientChannelImpl subscribeAcknowledge(int subscribeMessageId, List<MqttQoS> grantedQoSLevels) {
         return subscribeAcknowledgeWithCode(subscribeMessageId,
                 grantedQoSLevels.stream().mapToInt(MqttQoS::value).toArray(),
@@ -326,6 +332,7 @@ public class ClientChannelImpl implements ClientChannel {
         return this;
     }
 
+    @Override
     public ClientChannelImpl publishReceived(int publishMessageId) {
         return publishReceived(publishMessageId, MqttProperties.NO_PROPERTIES);
     }
@@ -371,11 +378,11 @@ public class ClientChannelImpl implements ClientChannel {
         }
     }
 
+    @Override
     public void close() {
         synchronized (this.channel) {
             checkClosed();
             this.channel.close();
-
             this.cleanup();
         }
     }
@@ -414,6 +421,7 @@ public class ClientChannelImpl implements ClientChannel {
         }
     }
 
+    @Override
     public void handleClosed() {
         synchronized (this.channel) {
             this.cleanup();

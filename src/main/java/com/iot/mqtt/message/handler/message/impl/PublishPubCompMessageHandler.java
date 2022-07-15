@@ -1,13 +1,11 @@
-package com.iot.mqtt.message.handler.message;
+package com.iot.mqtt.message.handler.message.impl;
 
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.constant.CommonConstant;
-import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
 import com.iot.mqtt.message.handler.base.BaseMessageHandler;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPubReplyMessageVariableHeader;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,9 +14,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service(value = "PUBCOMP" + CommonConstant.MQTT_MESSAGE_HANDLER)
 public class PublishPubCompMessageHandler extends BaseMessageHandler<MqttMessage> {
-
-    @Autowired
-    private IDupPubRelMessageManager dupPubRelMessageManager;
 
     @Override
     public void handle0(ClientChannel clientChannel, MqttMessage message) {
