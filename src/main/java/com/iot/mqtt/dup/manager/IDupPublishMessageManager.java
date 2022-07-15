@@ -1,4 +1,4 @@
-package com.iot.mqtt.message.dup.manager;
+package com.iot.mqtt.dup.manager;
 
 
 import io.netty.handler.codec.mqtt.MqttPublishMessage;

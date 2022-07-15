@@ -1,7 +1,7 @@
 package com.iot.mqtt.retain.manager;
 
 
-import com.iot.mqtt.message.dup.PublishMessageStore;
+import com.iot.mqtt.dup.PublishMessageStore;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.util.List;

@@ -1,13 +1,11 @@
 package com.iot.mqtt.message.handler.base;
 
 import com.iot.mqtt.context.MqttServiceContext;
-import com.iot.mqtt.redis.annotation.RedisBatch;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.config.MqttConfig;
-import com.iot.mqtt.constant.CommonConstant;
-import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
-import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
+import com.iot.mqtt.dup.manager.IDupPubRelMessageManager;
+import com.iot.mqtt.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
 import com.iot.mqtt.session.manager.IClientSessionManager;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
@@ -17,7 +15,6 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
 import java.util.Objects;
 

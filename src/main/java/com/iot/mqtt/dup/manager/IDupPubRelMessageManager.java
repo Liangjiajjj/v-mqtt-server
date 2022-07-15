@@ -1,6 +1,6 @@
-package com.iot.mqtt.message.dup.manager;
+package com.iot.mqtt.dup.manager;
 
-import com.iot.mqtt.message.dup.DupPubRelMessage;
+import com.iot.mqtt.dup.DupPubRelMessage;
 
 import java.util.Collection;
 

@@ -1,6 +1,6 @@
 package com.iot.mqtt.retain;
 
-import com.iot.mqtt.message.dup.PublishMessageStore;
+import com.iot.mqtt.dup.PublishMessageStore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

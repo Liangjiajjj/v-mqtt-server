@@ -1,6 +1,6 @@
-package com.iot.mqtt.message.messageid.service.impl;
+package com.iot.mqtt.messageid.service.impl;
 
-import com.iot.mqtt.message.messageid.service.IMessageIdService;
+import com.iot.mqtt.messageid.service.IMessageIdService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;

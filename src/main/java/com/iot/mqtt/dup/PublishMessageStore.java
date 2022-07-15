@@ -1,4 +1,4 @@
-package com.iot.mqtt.message.dup;
+package com.iot.mqtt.dup;
 
 import com.iot.mqtt.filter.BaseTopicBean;
 import io.netty.buffer.ByteBuf;

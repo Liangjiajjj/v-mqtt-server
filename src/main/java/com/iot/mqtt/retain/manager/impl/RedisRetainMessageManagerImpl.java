@@ -2,11 +2,10 @@ package com.iot.mqtt.retain.manager.impl;
 
 import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.constant.RedisKeyConstant;
-import com.iot.mqtt.message.dup.PublishMessageStore;
+import com.iot.mqtt.dup.PublishMessageStore;
 import com.iot.mqtt.retain.RetainMessageOperation;
 import com.iot.mqtt.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.redis.RedisBaseService;
-import com.iot.mqtt.redis.annotation.RedisBatch;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import com.iot.mqtt.filter.FixedTopicFilter;
 import com.iot.mqtt.filter.TopicFilter;

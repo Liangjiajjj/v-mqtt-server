@@ -6,7 +6,7 @@ import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.ClientChannelImpl;
 import com.iot.mqtt.channel.MqttAuth;
 import com.iot.mqtt.constant.CommonConstant;
-import com.iot.mqtt.message.dup.DupPubRelMessage;
+import com.iot.mqtt.dup.DupPubRelMessage;
 import com.iot.mqtt.message.handler.base.BaseMessageHandler;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;

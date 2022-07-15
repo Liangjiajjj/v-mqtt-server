@@ -1,4 +1,4 @@
-package com.iot.mqtt.message.messageid.service;
+package com.iot.mqtt.messageid.service;
 
 /**
  * @author liangjiajun

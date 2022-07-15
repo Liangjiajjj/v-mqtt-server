@@ -1,8 +1,8 @@
-package com.iot.mqtt.message.dup.manager.impl;
+package com.iot.mqtt.dup.manager.impl;
 
 import com.iot.mqtt.constant.RedisKeyConstant;
-import com.iot.mqtt.message.dup.PublishMessageStore;
-import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
+import com.iot.mqtt.dup.PublishMessageStore;
+import com.iot.mqtt.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;

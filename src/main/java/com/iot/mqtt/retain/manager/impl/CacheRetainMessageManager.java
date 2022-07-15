@@ -1,7 +1,7 @@
 package com.iot.mqtt.retain.manager.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.iot.mqtt.message.dup.PublishMessageStore;
+import com.iot.mqtt.dup.PublishMessageStore;
 import com.iot.mqtt.retain.manager.IRetainMessageManager;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

@@ -1,16 +1,13 @@
-package com.iot.mqtt.message.messageid.service.impl;
+package com.iot.mqtt.messageid.service.impl;
 
 import com.iot.mqtt.constant.RedisKeyConstant;
-import com.iot.mqtt.message.messageid.service.IMessageIdService;
+import com.iot.mqtt.messageid.service.IMessageIdService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *

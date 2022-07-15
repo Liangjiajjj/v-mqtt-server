@@ -1,8 +1,8 @@
-package com.iot.mqtt.message.dup.manager.impl;
+package com.iot.mqtt.dup.manager.impl;
 
 
-import com.iot.mqtt.message.dup.DupPubRelMessage;
-import com.iot.mqtt.message.dup.manager.IDupPubRelMessageManager;
+import com.iot.mqtt.dup.DupPubRelMessage;
+import com.iot.mqtt.dup.manager.IDupPubRelMessageManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import java.util.Collection;
