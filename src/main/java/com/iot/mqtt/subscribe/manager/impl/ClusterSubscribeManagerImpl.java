@@ -19,10 +19,14 @@ import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+
 import javax.annotation.PostConstruct;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author liangjiajun
@@ -42,6 +46,9 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
 
     @Autowired
     private MqttConfig config;
+
+    @Autowired
+    private ApplicationContext context;
 
     @Autowired
     private MqttServiceContext mqttServiceContext;
@@ -101,17 +108,16 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     }
 
     @Override
-    @RedisBatch
     public void removeForClient(String clientId) {
         String subscribeSetKey = RedisKeyConstant.SUBSCRIBE_SET_KEY.getKey(clientId);
-        getSet(subscribeSetKey).whenComplete((set, throwable) -> {
-            set.stream().map(o -> (String) o).forEach((topicFilter -> {
-                Subscribe subscribe = Subscribe.builder().clientId(clientId)
-                        .topicFilter(topicFilter).build();
-                remove(subscribe);
-            }));
+        getSet(subscribeSetKey).whenCompleteAsync((set, throwable) -> {
+            List<Subscribe> subscribes = set.stream().map(o -> (String) o)
+                    .map((topicFilter) ->
+                            Subscribe.builder().clientId(clientId).topicFilter(topicFilter).build()
+                    ).collect(Collectors.toList());
+            context.getBean(this.getClass()).removeSubscriptions(subscribes);
         });
-        removeSet(subscribeSetKey);
+        // removeSet(subscribeSetKey);
     }
 
     @Override
@@ -126,7 +132,7 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     public void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message) {
         String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
-        Collection<Subscribe> subscribes =  search(topicName);
+        Collection<Subscribe> subscribes = search(topicName);
         subscribes.forEach(subscribe -> {
             // 发送消息到订阅的topic
             IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);
@@ -166,5 +172,11 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     @RedisBatch
     public void removeSubscriptions(String clientId, MqttUnsubscribeMessage message) {
         ISubscribeManager.super.removeSubscriptions(clientId, message);
+    }
+
+    @Override
+    @RedisBatch
+    public void removeSubscriptions(List<Subscribe> subscribes) {
+        ISubscribeManager.super.removeSubscriptions(subscribes);
     }
 }

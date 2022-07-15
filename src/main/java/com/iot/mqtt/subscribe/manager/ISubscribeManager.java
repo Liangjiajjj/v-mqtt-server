@@ -5,6 +5,7 @@ import com.iot.mqtt.subscribe.topic.Subscribe;
 import io.netty.handler.codec.mqtt.*;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author liangjiajun
@@ -38,7 +39,6 @@ public interface ISubscribeManager {
     void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message);
 
     /**
-     *
      * @param clientId
      * @param message
      */
@@ -51,13 +51,31 @@ public interface ISubscribeManager {
     }
 
     /**
-     *
+     * @param subscribes
+     */
+    default void addSubscriptions(List<Subscribe> subscribes) {
+        for (Subscribe subscribe : subscribes) {
+            add(subscribe);
+        }
+    }
+
+    /**
      * @param clientId
      * @param message
      */
     default void removeSubscriptions(String clientId, MqttUnsubscribeMessage message) {
         for (String topicName : message.payload().topics()) {
             remove(Subscribe.builder().clientId(clientId).topicFilter(topicName).build());
+        }
+    }
+
+    /**
+     *
+     * @param subscribes
+     */
+    default void removeSubscriptions(List<Subscribe> subscribes) {
+        for (Subscribe subscribe : subscribes) {
+            remove(subscribe);
         }
     }
 }

@@ -12,4 +12,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RedisBatch {
 
+    /**
+     * 跳过返回结果
+     */
+    boolean skipResult() default true;
+
 }

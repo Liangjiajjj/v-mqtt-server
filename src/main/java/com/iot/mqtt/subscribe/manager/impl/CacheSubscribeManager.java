@@ -74,7 +74,7 @@ public class CacheSubscribeManager implements ISubscribeManager {
     public void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message) {
         String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
-        Collection<Subscribe> subscribes =  search(topicName);
+        Collection<Subscribe> subscribes = search(topicName);
         subscribes.forEach(subscribe -> {
             // 发送消息到订阅的topic
             IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);

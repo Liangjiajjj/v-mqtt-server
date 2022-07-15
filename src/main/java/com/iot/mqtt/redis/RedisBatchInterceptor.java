@@ -36,16 +36,20 @@ public class RedisBatchInterceptor {
     @Around("excludeExecutionPointcut() && @annotation(redisBatch)")
     public Object execute(ProceedingJoinPoint joinPoint, RedisBatch redisBatch) throws Throwable {
         try {
-            RBatch batch = redissonClient.createBatch(BatchOptions.defaults().skipResult());
+            BatchOptions options = BatchOptions.defaults();
+            if (redisBatch.skipResult()) {
+                options.skipResult();
+            }
+            RBatch batch = redissonClient.createBatch(options);
             if (log.isTraceEnabled()) {
-                log.trace("RedisBatch start ... Method name : {}", joinPoint.getSignature().getName());
+                log.trace("RedisBatch start ... Method name : {} , skipResult {}", joinPoint.getSignature().getName(), redisBatch.skipResult());
             }
             THREAD_LOCAL.set(batch);
             Object proceed = joinPoint.proceed();
             // todo: 是否要立即提交？如果方法之间的嵌套的解决思路?
             batch.execute();
             if (log.isTraceEnabled()) {
-                log.trace("RedisBatch execute ... Method name : {}", joinPoint.getSignature().getName());
+                log.trace("RedisBatch execute ... Method name : {} , skipResult {}", joinPoint.getSignature().getName(), redisBatch.skipResult());
             }
             return proceed;
         } finally {

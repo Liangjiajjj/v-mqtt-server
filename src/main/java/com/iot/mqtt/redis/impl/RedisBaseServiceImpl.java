@@ -148,7 +148,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getSet(key).deleteAsync();
         } else {
-            redissonClient.getSet(key).delete();
+            redissonClient.getSet(key).deleteAsync();
         }
     }
 
