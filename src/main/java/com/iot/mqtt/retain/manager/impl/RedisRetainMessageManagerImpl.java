@@ -76,7 +76,6 @@ public class RedisRetainMessageManagerImpl extends RedisBaseServiceImpl<PublishM
     }
 
     @Override
-    @RedisBatch
     public void put(String topicFilter, MqttPublishMessage retainMessage) {
         PublishMessageStore publishMessageStore = PublishMessageStore.fromMessage(retainMessage);
         add0(publishMessageStore);
@@ -90,7 +89,6 @@ public class RedisRetainMessageManagerImpl extends RedisBaseServiceImpl<PublishM
     }
 
     @Override
-    @RedisBatch
     public void remove(String topicFilter) {
         PublishMessageStore publishMessageStore = PublishMessageStore.fromMessage(topicFilter);
         remove0(publishMessageStore);
