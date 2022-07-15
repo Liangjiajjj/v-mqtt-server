@@ -7,7 +7,7 @@ import java.util.Arrays;
 /**
  * @author liangjiajun
  */
-public enum SubscribeOperationType {
+public enum OperationType {
     /**
      * 添加
      */
@@ -20,11 +20,11 @@ public enum SubscribeOperationType {
     @Getter
     private final Integer type;
 
-    SubscribeOperationType(Integer type) {
+    OperationType(Integer type) {
         this.type = type;
     }
 
-    public static SubscribeOperationType getSubscribeOperationType(Integer type) {
+    public static OperationType getOperationType(Integer type) {
         return Arrays.stream(values()).filter((sub) -> sub.type.equals(type)).findFirst().orElse(null);
     }
 }

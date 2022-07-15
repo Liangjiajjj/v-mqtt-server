@@ -1,5 +1,6 @@
-package com.iot.mqtt.subscribe.topic;
+package com.iot.mqtt.subscribe;
 
+import com.iot.mqtt.filter.BaseTopicBean;
 import lombok.*;
 
 import java.util.Objects;
@@ -13,7 +14,7 @@ import java.util.Objects;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class Subscribe {
+public class Subscribe extends BaseTopicBean {
 
     /**
      * 客户端id

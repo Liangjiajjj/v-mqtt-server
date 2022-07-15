@@ -40,7 +40,11 @@ public enum RedisKeyConstant {
     /**
      * 同步订阅主题
      */
-    SYN_SUBSCRIBE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "syn_subscribe_topic")
+    SYN_SUBSCRIBE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "syn_subscribe_topic"),
+    /**
+     * 同步订阅保留消息
+     */
+    SYN_RETAIN_MESSAGE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "syn_retain_message_topic")
     ;
 
     private final String key;

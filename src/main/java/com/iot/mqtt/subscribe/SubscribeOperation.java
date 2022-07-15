@@ -1,4 +1,4 @@
-package com.iot.mqtt.subscribe.topic;
+package com.iot.mqtt.subscribe;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,5 +1,6 @@
 package com.iot.mqtt.message.dup;
 
+import com.iot.mqtt.filter.BaseTopicBean;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
@@ -8,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 /**
  * @author liangjiajun
  */
@@ -15,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PublishMessageStore {
+public class PublishMessageStore extends BaseTopicBean {
 
     private String clientId;
 
@@ -26,6 +29,10 @@ public class PublishMessageStore {
     private int messageId;
 
     private byte[] messageBytes;
+
+    public static PublishMessageStore fromMessage(String topic) {
+        return PublishMessageStore.builder().topic(topic).build();
+    }
 
     public static PublishMessageStore fromMessage(MqttPublishMessage message) {
         byte[] messageBytes = new byte[message.payload().readableBytes()];
@@ -51,4 +58,23 @@ public class PublishMessageStore {
         ByteBuf buf = Unpooled.copiedBuffer(messageBytes);
         return (MqttPublishMessage) MqttMessageFactory.newMessage(fixedHeader, variableHeader, buf);
     }
+
+    @Override
+    public String getTopicFilter() {
+        return topic;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PublishMessageStore that = (PublishMessageStore) o;
+        return Objects.equals(topic, that.topic);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(topic);
+    }
+
 }

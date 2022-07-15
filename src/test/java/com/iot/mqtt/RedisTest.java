@@ -2,7 +2,7 @@ package com.iot.mqtt;
 
 import com.iot.mqtt.message.handler.message.impl.SubscribeMessageHandler;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
-import com.iot.mqtt.subscribe.topic.Subscribe;
+import com.iot.mqtt.subscribe.Subscribe;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.FixMethodOrder;
 import org.junit.Test;

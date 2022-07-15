@@ -2,12 +2,11 @@ package com.iot.mqtt.subscribe.manager.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.iot.mqtt.channel.ClientChannel;
-import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.context.MqttServiceContext;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
-import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
+import com.iot.mqtt.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.redis.annotation.RedisBatch;
-import com.iot.mqtt.subscribe.topic.Subscribe;
+import com.iot.mqtt.subscribe.Subscribe;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
@@ -75,11 +74,11 @@ public class CacheSubscribeManager implements ISubscribeManager {
         String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
         Collection<Subscribe> subscribes = search(topicName);
+        retainMessageManager.handlerRetainMessage(message, topicName);
         subscribes.forEach(subscribe -> {
             // 发送消息到订阅的topic
             IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);
             qosLevelMessageService.publish(clientChannel, subscribe, message);
-            retainMessageManager.handlerRetainMessage(message, topicName);
         });
     }
 }

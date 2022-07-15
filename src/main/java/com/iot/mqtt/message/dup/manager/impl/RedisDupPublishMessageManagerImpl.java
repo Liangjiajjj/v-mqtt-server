@@ -5,11 +5,7 @@ import com.iot.mqtt.message.dup.PublishMessageStore;
 import com.iot.mqtt.message.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
-import com.iot.mqtt.subscribe.topic.Subscribe;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import org.redisson.api.RMap;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 

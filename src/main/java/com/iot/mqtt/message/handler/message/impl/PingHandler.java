@@ -12,7 +12,7 @@ import java.util.Objects;
 /**
  * @author liangjiajun
  */
-@Service(value = "PING" + CommonConstant.MQTT_MESSAGE_HANDLER)
+@Service(value = "PINGREQ" + CommonConstant.MQTT_MESSAGE_HANDLER)
 public class PingHandler extends BaseMessageHandler<MqttMessage> {
 
     @Override

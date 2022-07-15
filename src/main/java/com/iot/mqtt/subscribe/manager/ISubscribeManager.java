@@ -1,7 +1,7 @@
 package com.iot.mqtt.subscribe.manager;
 
 import com.iot.mqtt.channel.ClientChannel;
-import com.iot.mqtt.subscribe.topic.Subscribe;
+import com.iot.mqtt.subscribe.Subscribe;
 import io.netty.handler.codec.mqtt.*;
 
 import java.util.Collection;

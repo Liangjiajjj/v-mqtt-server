@@ -1,7 +1,8 @@
-package com.iot.mqtt.message.retain.manager.impl;
+package com.iot.mqtt.retain.manager.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
+import com.iot.mqtt.message.dup.PublishMessageStore;
+import com.iot.mqtt.retain.manager.IRetainMessageManager;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,8 @@ public class CacheRetainMessageManager implements IRetainMessageManager {
     }
 
     @Override
-    public MqttPublishMessage get(String topic) {
-        return TOPIC_TO_RETAIN_MESSAGE_MAP.get(topic);
+    public PublishMessageStore get(String topic) {
+        return PublishMessageStore.fromMessage(TOPIC_TO_RETAIN_MESSAGE_MAP.get(topic));
     }
 
     @Override
@@ -45,8 +46,9 @@ public class CacheRetainMessageManager implements IRetainMessageManager {
     }
 
     @Override
-    public List<MqttPublishMessage> search(String topicFilter) {
+    public List<PublishMessageStore> search(String topicFilter) {
         return Optional.ofNullable(TOPIC_TO_RETAIN_MESSAGE_MAP.get(topicFilter))
+                .map(PublishMessageStore::fromMessage)
                 .map(Collections::singletonList)
                 .orElse(Collections.EMPTY_LIST);
     }

@@ -5,13 +5,17 @@ import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.constant.RedisKeyConstant;
 import com.iot.mqtt.context.MqttServiceContext;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
-import com.iot.mqtt.message.retain.manager.IRetainMessageManager;
+import com.iot.mqtt.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.annotation.RedisBatch;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
+import com.iot.mqtt.filter.FixedTopicFilter;
+import com.iot.mqtt.filter.TopicFilter;
+import com.iot.mqtt.filter.TreeTopicFilter;
+import com.iot.mqtt.subscribe.Subscribe;
+import com.iot.mqtt.subscribe.SubscribeOperation;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
-import com.iot.mqtt.subscribe.topic.*;
-import com.iot.mqtt.type.SubscribeOperationType;
+import com.iot.mqtt.type.OperationType;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
@@ -40,9 +44,9 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
 
     private static final String MORE_SYMBOL = "#";
 
-    private TopicFilter fixedTopicFilter;
+    private TopicFilter<Subscribe> fixedTopicFilter;
 
-    private TopicFilter treeTopicFilter;
+    private TopicFilter<Subscribe> treeTopicFilter;
 
     @Autowired
     private MqttConfig config;
@@ -58,8 +62,8 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
 
     @PostConstruct
     private void init() {
-        this.fixedTopicFilter = new FixedTopicFilter();
-        this.treeTopicFilter = new TreeTopicFilter();
+        this.fixedTopicFilter = new FixedTopicFilter<>();
+        this.treeTopicFilter = new TreeTopicFilter<>();
         initRedis();
     }
 
@@ -77,11 +81,11 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
                 log.info("syn subscribe topic not handle self !!!  operation brokerId :{} , brokerId:{}  ", operation.getBrokerId(), config.getBrokerId());
                 return;
             }
-            SubscribeOperationType operationType = SubscribeOperationType.getSubscribeOperationType(operation.getOperation());
+            OperationType operationType = OperationType.getOperationType(operation.getOperation());
             if (log.isTraceEnabled()) {
                 log.trace("syn subscribe topic operation:{} , subscribe:{}  ", operationType, operation.getSubscribe());
             }
-            if (SubscribeOperationType.ADD.equals(operationType)) {
+            if (OperationType.ADD.equals(operationType)) {
                 add0(operation.getSubscribe());
             } else {
                 remove0(operation.getSubscribe());
@@ -95,7 +99,7 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
         add0(subscribe);
         putMap(RedisKeyConstant.SUBSCRIBE_KEY.getKey(subscribe.getTopicFilter()), subscribe.getClientId(), subscribe);
         addSet(RedisKeyConstant.SUBSCRIBE_SET_KEY.getKey(subscribe.getClientId()), subscribe.getTopicFilter());
-        synSubscribeTopic(SubscribeOperationType.ADD, subscribe);
+        synSubscribeTopic(OperationType.ADD, subscribe);
     }
 
     @Override
@@ -104,7 +108,7 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
         remove0(subscribe);
         removeMap(RedisKeyConstant.SUBSCRIBE_KEY.getKey(subscribe.getTopicFilter()), subscribe.getClientId());
         removeSet(RedisKeyConstant.SUBSCRIBE_SET_KEY.getKey(subscribe.getClientId()), subscribe.getTopicFilter());
-        synSubscribeTopic(SubscribeOperationType.REMOVE, subscribe);
+        synSubscribeTopic(OperationType.REMOVE, subscribe);
     }
 
     @Override
@@ -122,8 +126,8 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
 
     @Override
     public Collection<Subscribe> search(String topicName) {
-        Set<Subscribe> subscribeTopics = fixedTopicFilter.getSubscribeByTopic(topicName);
-        subscribeTopics.addAll(treeTopicFilter.getSubscribeByTopic(topicName));
+        Set<Subscribe> subscribeTopics = fixedTopicFilter.getSet(topicName);
+        subscribeTopics.addAll(treeTopicFilter.getSet(topicName));
         return subscribeTopics;
     }
 
@@ -132,32 +136,32 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     public void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message) {
         String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
+        retainMessageManager.handlerRetainMessage(message, topicName);
         Collection<Subscribe> subscribes = search(topicName);
         subscribes.forEach(subscribe -> {
             // 发送消息到订阅的topic
             IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);
             qosLevelMessageService.publish(clientChannel, subscribe, message);
-            retainMessageManager.handlerRetainMessage(message, topicName);
         });
     }
 
     private void add0(Subscribe subscribe) {
         if (subscribe.getTopicFilter().contains(ONE_SYMBOL) || subscribe.getTopicFilter().contains(MORE_SYMBOL)) {
-            treeTopicFilter.addSubscribeTopic(subscribe);
+            treeTopicFilter.add(subscribe);
         } else {
-            fixedTopicFilter.addSubscribeTopic(subscribe);
+            fixedTopicFilter.add(subscribe);
         }
     }
 
     private void remove0(Subscribe subscribe) {
         if (subscribe.getTopicFilter().contains(ONE_SYMBOL) || subscribe.getTopicFilter().contains(MORE_SYMBOL)) {
-            treeTopicFilter.removeSubscribeTopic(subscribe);
+            treeTopicFilter.remove(subscribe);
         } else {
-            fixedTopicFilter.removeSubscribeTopic(subscribe);
+            fixedTopicFilter.remove(subscribe);
         }
     }
 
-    public void synSubscribeTopic(SubscribeOperationType type, Subscribe subscribe) {
+    public void synSubscribeTopic(OperationType type, Subscribe subscribe) {
         SubscribeOperation operation = SubscribeOperation.builder().operation(type.getType()).subscribe(subscribe).brokerId(config.getBrokerId()).build();
         publish(RedisKeyConstant.SYN_SUBSCRIBE_TOPIC.getKey(), operation);
     }

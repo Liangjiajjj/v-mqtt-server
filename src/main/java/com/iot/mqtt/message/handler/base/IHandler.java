@@ -3,6 +3,9 @@ package com.iot.mqtt.message.handler.base;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
+/**
+ * @author liangjiajun
+ */
 public interface IHandler<E> {
 
     /**

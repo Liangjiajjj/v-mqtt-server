@@ -3,8 +3,6 @@ package com.iot.mqtt.message.handler.message.impl;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.handler.base.BaseMessageHandler;
-import com.iot.mqtt.redis.annotation.RedisBatch;
-import com.iot.mqtt.subscribe.topic.Subscribe;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
@@ -47,7 +45,8 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
         clientChannel.subscribeAcknowledge(messageId, grantedQosLevels);
         // 发布保留消息
         for (MqttTopicSubscription subscription : message.payload().topicSubscriptions()) {
-            getQosLevelMessageService(subscription.qualityOfService()).sendRetainMessage(clientChannel, subscription.topicName());
+            getQosLevelMessageService(subscription.qualityOfService()).sendRetainMessage(clientChannel,
+                    subscription.topicName(), subscription.qualityOfService());
         }
     }
 
