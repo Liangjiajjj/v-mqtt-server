@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.LongAdder;
  */
 public class TreeTopicFilter<T extends BaseTopicBean> implements TopicFilter<T> {
 
-    private final TreeNode<T> rootTreeNode = new TreeNode("root");
+    private final TreeNode<T> rootTreeNode = new TreeNode<>("root");
 
     private final LongAdder count = new LongAdder();
 

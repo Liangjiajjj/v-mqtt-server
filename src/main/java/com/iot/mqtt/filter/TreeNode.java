@@ -1,11 +1,11 @@
 package com.iot.mqtt.filter;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +21,7 @@ public class TreeNode<T extends BaseTopicBean> {
 
     private final String topic;
 
-    private Set<T> topicSet = new CopyOnWriteArraySet<>();
+    private Set<T> topicSet = new ConcurrentHashSet<>();
 
     private Map<String, TreeNode<T>> childNodes = new ConcurrentHashMap<>();
 

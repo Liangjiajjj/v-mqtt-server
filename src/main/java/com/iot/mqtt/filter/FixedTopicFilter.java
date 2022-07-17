@@ -1,12 +1,13 @@
 package com.iot.mqtt.filter;
 
 
+import cn.hutool.core.collection.ConcurrentHashSet;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
@@ -17,17 +18,17 @@ public class FixedTopicFilter<T extends BaseTopicBean> implements TopicFilter<T>
 
     private final LongAdder count = new LongAdder();
 
-    private final Map<String, CopyOnWriteArraySet<T>> topicChannels = new ConcurrentHashMap<>();
+    private final Map<String, ConcurrentHashSet<T>> topicChannels = new ConcurrentHashMap<>();
 
     @Override
     public Set<T> getSet(String topic) {
-        CopyOnWriteArraySet<T> channels = topicChannels.computeIfAbsent(topic, t -> new CopyOnWriteArraySet<>());
+        ConcurrentHashSet<T> channels = topicChannels.computeIfAbsent(topic, t -> new ConcurrentHashSet<>());
         return new HashSet<>(channels);
     }
 
     @Override
     public void add(T t) {
-        CopyOnWriteArraySet<T> channels = topicChannels.computeIfAbsent(t.getTopicFilter(), list -> new CopyOnWriteArraySet<>());
+        ConcurrentHashSet<T> channels = topicChannels.computeIfAbsent(t.getTopicFilter(), list -> new ConcurrentHashSet<>());
         if (channels.add(t)) {
             count.add(1);
         }
@@ -35,7 +36,7 @@ public class FixedTopicFilter<T extends BaseTopicBean> implements TopicFilter<T>
 
     @Override
     public void remove(T t) {
-        CopyOnWriteArraySet<T> channels = topicChannels.computeIfAbsent(t.getTopicFilter(), list -> new CopyOnWriteArraySet<>());
+        ConcurrentHashSet<T> channels = topicChannels.computeIfAbsent(t.getTopicFilter(), list -> new ConcurrentHashSet<>());
         if (channels.remove(t)) {
             count.add(-1);
         }
