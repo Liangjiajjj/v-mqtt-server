@@ -17,4 +17,9 @@ public @interface RedisBatch {
      */
     boolean skipResult() default true;
 
+    /**
+     * 跳过返回结果
+     */
+    boolean aSync() default false;
+
 }

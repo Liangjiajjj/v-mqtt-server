@@ -47,7 +47,11 @@ public class RedisBatchInterceptor {
             THREAD_LOCAL.set(batch);
             Object proceed = joinPoint.proceed();
             // todo: 是否要立即提交？如果方法之间的嵌套的解决思路?
-            batch.execute();
+            if (redisBatch.aSync()) {
+                batch.executeAsync();
+            } else {
+                batch.execute();
+            }
             if (log.isTraceEnabled()) {
                 log.trace("RedisBatch execute ... Method name : {} , skipResult {}", joinPoint.getSignature().getName(), redisBatch.skipResult());
             }

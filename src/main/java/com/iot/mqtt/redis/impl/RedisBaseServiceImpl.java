@@ -23,7 +23,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getBucket(key).setAsync(v);
         } else {
-            redissonClient.getBucket(key).setAsync(v);
+            redissonClient.getBucket(key).set(v);
         }
     }
 
@@ -48,7 +48,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getMap(mapKey).putAsync(key, v);
         } else {
-            redissonClient.getMap(mapKey).putAsync(key, v);
+            redissonClient.getMap(mapKey).put(key, v);
         }
     }
 
@@ -58,7 +58,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getMap(mapKey).putAsync(key, str);
         } else {
-            redissonClient.getMap(mapKey).putAsync(key, str);
+            redissonClient.getMap(mapKey).put(key, str);
         }
     }
 
@@ -73,7 +73,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getMap(mapKey).removeAsync(key);
         } else {
-            redissonClient.getMap(mapKey).removeAsync(key);
+            redissonClient.getMap(mapKey).remove(key);
         }
     }
 
@@ -83,7 +83,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getMap(mapKey).deleteAsync();
         } else {
-            redissonClient.getMap(mapKey).deleteAsync();
+            redissonClient.getMap(mapKey).delete();
         }
     }
 
@@ -98,7 +98,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getSet(key).addAsync(v);
         } else {
-            redissonClient.getSet(key).addAsync(v);
+            redissonClient.getSet(key).add(v);
         }
     }
 
@@ -108,7 +108,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getSet(key).addAsync(str);
         } else {
-            redissonClient.getSet(key).addAsync(str);
+            redissonClient.getSet(key).add(str);
         }
     }
 
@@ -118,7 +118,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getSet(key).removeAsync(v);
         } else {
-            redissonClient.getSet(key).removeAsync(v);
+            redissonClient.getSet(key).remove(v);
         }
     }
 
@@ -128,7 +128,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getSet(key).removeAsync(str);
         } else {
-            redissonClient.getSet(key).removeAsync(str);
+            redissonClient.getSet(key).remove(str);
         }
     }
 
@@ -148,7 +148,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getSet(key).deleteAsync();
         } else {
-            redissonClient.getSet(key).deleteAsync();
+            redissonClient.getSet(key).delete();
         }
     }
 
@@ -163,7 +163,7 @@ public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
         if (Objects.nonNull(batch)) {
             batch.getTopic(key).publishAsync(object);
         } else {
-            redissonClient.getTopic(key).publishAsync(object);
+            redissonClient.getTopic(key).publish(object);
         }
     }
 
