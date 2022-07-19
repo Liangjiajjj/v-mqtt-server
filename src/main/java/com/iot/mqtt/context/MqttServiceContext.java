@@ -1,14 +1,20 @@
 package com.iot.mqtt.context;
 
+import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.handler.base.IHandler;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
+import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * @author liangjiajun
@@ -17,6 +23,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class MqttServiceContext {
 
+    @Autowired
+    private MqttConfig mqttConfig;
     @Autowired
     private ApplicationContext context;
 
@@ -38,5 +46,12 @@ public class MqttServiceContext {
      */
     public IHandler getMessageHandler(MqttMessageType messageType) {
         return context.getBean(messageType.name() + CommonConstant.MQTT_MESSAGE_HANDLER, IHandler.class);
+    }
+
+    @Bean(value = "PUBLISH-EXECUTOR")
+    public MqttEventExecuteGroup publishExecutor(){
+        Integer nThreads = Optional.ofNullable(mqttConfig.getPushThreads())
+                .orElse(Runtime.getRuntime().availableProcessors());
+        return new MqttEventExecuteGroup(nThreads, new DefaultThreadFactory("PUBLISH-EXECUTOR"));
     }
 }

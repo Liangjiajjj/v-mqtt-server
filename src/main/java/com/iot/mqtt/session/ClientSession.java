@@ -23,6 +23,8 @@ public class ClientSession {
 
     private String clientId;
 
+    private Long md5Key;
+
     private int expire;
 
     private MqttWill will;
@@ -33,6 +35,8 @@ public class ClientSession {
         JSONObject object = new JSONObject();
         object.put("brokerId", brokerId);
         object.put("clientId", clientId);
+        object.put("md5_key", md5Key);
+
         object.put("expire", expire);
         object.put("isCleanSession", isCleanSession);
         if (Objects.nonNull(getWill()) && getWill().isWillFlag()) {
@@ -45,8 +49,9 @@ public class ClientSession {
         String brokerId = jsonObject.getString("brokerId");
         String clientId = jsonObject.getString("clientId");
         Integer expire = jsonObject.getInteger("expire");
+        Long md5Key = jsonObject.getLong("md5_key");
         Boolean isCleanSession = jsonObject.getBoolean("isCleanSession");
         MqttWill will = Optional.ofNullable(jsonObject.getJSONObject("will")).map(MqttWill::new).orElse(null);
-        return new ClientSession(brokerId, clientId, expire, will, isCleanSession);
+        return new ClientSession(brokerId, clientId, md5Key, expire, will, isCleanSession);
     }
 }

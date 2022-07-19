@@ -69,9 +69,8 @@ public class CacheSubscribeManager implements ISubscribeManager {
     }
 
     @Override
-    @RedisBatch
     public void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message) {
-        String topicName = message.variableHeader().topicName();
+      /*  String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
         Collection<Subscribe> subscribes = search(topicName);
         retainMessageManager.handlerRetainMessage(message, topicName);
@@ -79,6 +78,6 @@ public class CacheSubscribeManager implements ISubscribeManager {
             // 发送消息到订阅的topic
             IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);
             qosLevelMessageService.publish(clientChannel, subscribe, message);
-        });
+        });*/
     }
 }

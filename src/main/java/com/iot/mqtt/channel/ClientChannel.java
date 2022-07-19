@@ -70,5 +70,5 @@ public interface ClientChannel {
 
     void handleClosed();
 
-    JSONObject toJson();
+    Long getMd5Key();
 }

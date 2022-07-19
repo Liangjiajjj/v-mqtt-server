@@ -53,6 +53,11 @@ public class MqttConfig {
     @Value("${mqtt.work_threads}")
     private Integer workThreads;
 
+    /**
+     * 推送消息线程池
+     */
+    @Value("${mqtt.push_threads}")
+    private Integer pushThreads;
 
     /**
      * 是否开启 epoll

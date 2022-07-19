@@ -30,6 +30,7 @@ public class CacheClientSessionManager implements IClientSessionManager {
         ClientSession clientSession = ClientSession.builder().brokerId(brokerId)
                 .expire(keepAliveTimeout)
                 .clientId(clientId)
+                .md5Key(channel.getMd5Key())
                 .isCleanSession(channel.isCleanSession())
                 .will(channel.will()).build();
         CLIENT_SESSION_MAP.put(clientId, clientSession);

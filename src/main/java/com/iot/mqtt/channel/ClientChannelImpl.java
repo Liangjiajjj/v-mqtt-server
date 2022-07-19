@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -25,6 +27,11 @@ import java.util.List;
 public class ClientChannelImpl implements ClientChannel {
 
     private static final int MAX_MESSAGE_ID = 65535;
+
+    /**
+     * md5 解析器
+     */
+    private static MessageDigest md5 = null;
 
     /**
      * 管道
@@ -92,6 +99,19 @@ public class ClientChannelImpl implements ClientChannel {
      */
     private final MqttProperties connectProperties;
 
+    /**
+     * md5 key
+     */
+    private final Long md5Key;
+
+    static {
+        try {
+            md5 = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("no md5 algrithm found");
+        }
+    }
+
     public ClientChannelImpl(Channel channel) {
         this.channel = channel;
         this.clientIdentifier = null;
@@ -101,6 +121,7 @@ public class ClientChannelImpl implements ClientChannel {
         this.protocolVersion = 0;
         this.keepAliveTimeoutSeconds = 0;
         this.connectProperties = null;
+        this.md5Key = null;
     }
 
     public ClientChannelImpl(Channel channel, EventExecutor executor, MqttConnectMessage msg) {
@@ -140,6 +161,7 @@ public class ClientChannelImpl implements ClientChannel {
         this.connectProperties = msg.variableHeader().properties();
         this.channel = channel;
         this.executor = executor;
+        this.md5Key = hash(clientIdentifier);
     }
 
     public String getId() {
@@ -432,14 +454,28 @@ public class ClientChannelImpl implements ClientChannel {
     }
 
     @Override
-    public JSONObject toJson() {
-        return null;
+    public Long getMd5Key() {
+        return md5Key;
     }
 
     private int nextMessageId() {
         // if 0 or MAX_MESSAGE_ID, it becomes 1 (first valid messageId)
         this.messageIdCounter = ((this.messageIdCounter % MAX_MESSAGE_ID) != 0) ? this.messageIdCounter + 1 : 1;
         return this.messageIdCounter;
+    }
+
+    /*
+     * 实现一致性哈希算法中使用的哈希函数,使用MD5算法来保证一致性哈希的平衡性
+     */
+    private long hash(String key) {
+        md5.reset();
+        md5.update(key.getBytes());
+        byte[] bKey = md5.digest();
+        //具体的哈希函数实现细节--每个字节 & 0xFF 再移位
+        long result = ((long) (bKey[3] & 0xFF) << 24)
+                | ((long) (bKey[2] & 0xFF) << 16
+                | ((long) (bKey[1] & 0xFF) << 8) | (long) (bKey[0] & 0xFF));
+        return result & 0xffffffffL;
     }
 
 }

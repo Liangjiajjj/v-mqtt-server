@@ -7,6 +7,7 @@ import java.util.Objects;
 
 /**
  * 订阅topic
+ *
  * @author liangjiajun
  */
 @Data
@@ -20,11 +21,18 @@ public class Subscribe extends BaseTopicBean {
      * 客户端id
      */
     private String clientId;
+
+    /**
+     * md5 key
+     */
+    private Long md5Key;
+
     /**
      * 主题过滤器
      * 订阅中包含一个表达式，用于表示一个或者多个主题。可以使用通配符
      */
     private String topicFilter;
+
     /**
      * 服务质量
      */

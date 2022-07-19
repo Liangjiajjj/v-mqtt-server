@@ -8,6 +8,7 @@ import com.iot.mqtt.dup.PublishMessageStore;
 import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import com.iot.mqtt.relay.IRelayMessageService;
+import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -28,8 +30,8 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
 
     @Autowired
     private MqttConfig mqttConfig;
-    // @Autowired
-    // private RedissonClient redissonClient;
+    @Resource(name = "PUBLISH-EXECUTOR")
+    private MqttEventExecuteGroup mqttEventExecuteGroup;
     @Autowired
     private IClientChannelManager clientChannelManager;
 
@@ -49,7 +51,11 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
                 return;
             }
             MqttPublishMessage publishMessage = msg.toMessage();
-            clientChannel.publish(publishMessage.variableHeader().topicName(), publishMessage.payload().array(), publishMessage.fixedHeader().qosLevel(), false, false, messageId);
+            mqttEventExecuteGroup.get(clientChannel.getMd5Key()).execute(() -> {
+                clientChannel.publish(publishMessage.variableHeader().topicName(),
+                        publishMessage.payload().array(), publishMessage.fixedHeader().qosLevel(),
+                        false, false, messageId);
+            });
         });
     }
 

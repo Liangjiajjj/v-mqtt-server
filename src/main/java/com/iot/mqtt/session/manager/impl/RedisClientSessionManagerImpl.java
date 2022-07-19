@@ -28,7 +28,9 @@ public class RedisClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObje
                 .expire(expire)
                 .clientId(clientId)
                 .isCleanSession(clientChannel.isCleanSession())
-                .will(clientChannel.will()).build();
+                .will(clientChannel.will())
+
+                .build();
         setBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId), clientSession.toJson());
         if (expire > 0) {
             expire(clientId, expire);
@@ -55,7 +57,7 @@ public class RedisClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObje
 
     @Override
     public void expire(String clientId, int expire) {
-        expireBucket(clientId, expire);
+        expireBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId), expire);
     }
 
 }

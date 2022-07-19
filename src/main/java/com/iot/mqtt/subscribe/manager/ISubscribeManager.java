@@ -42,11 +42,11 @@ public interface ISubscribeManager {
      * @param clientId
      * @param message
      */
-    default void addSubscriptions(String clientId, MqttSubscribeMessage message) {
+    default void addSubscriptions(String clientId, Long md5Key, MqttSubscribeMessage message) {
         for (MqttTopicSubscription subscription : message.payload().topicSubscriptions()) {
             MqttQoS mqttQoS = subscription.qualityOfService();
             String topicName = subscription.topicName();
-            add(Subscribe.builder().clientId(clientId).topicFilter(topicName).mqttQoS(mqttQoS.value()).build());
+            add(Subscribe.builder().clientId(clientId).md5Key(md5Key).topicFilter(topicName).mqttQoS(mqttQoS.value()).build());
         }
     }
 
@@ -70,7 +70,6 @@ public interface ISubscribeManager {
     }
 
     /**
-     *
      * @param subscribes
      */
     default void removeSubscriptions(List<Subscribe> subscribes) {

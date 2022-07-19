@@ -38,8 +38,9 @@ public class SubscribeMessageHandler extends BaseMessageHandler<MqttSubscribeMes
     @Override
     public void handle0(ClientChannel clientChannel, MqttSubscribeMessage message) {
         String clientId = clientChannel.clientIdentifier();
+        Long md5Key = clientChannel.getMd5Key();
         int messageId = message.variableHeader().messageId();
-        subscribeManager.addSubscriptions(clientId, message);
+        subscribeManager.addSubscriptions(clientId,md5Key, message);
         List<MqttQoS> grantedQosLevels = message.payload().topicSubscriptions().stream().map(MqttTopicSubscription::qualityOfService).collect(Collectors.toList());
         // 确认订阅请求
         clientChannel.subscribeAcknowledge(messageId, grantedQosLevels);

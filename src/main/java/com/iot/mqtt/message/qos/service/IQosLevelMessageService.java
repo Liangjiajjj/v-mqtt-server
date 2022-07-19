@@ -2,8 +2,11 @@ package com.iot.mqtt.message.qos.service;
 
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.subscribe.Subscribe;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
+
+import java.nio.Buffer;
 
 /**
  * @author liangjiajun
@@ -17,6 +20,7 @@ public interface IQosLevelMessageService {
      * @return
      */
     void publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message);
+
 
     /**
      * 发送保留消息
