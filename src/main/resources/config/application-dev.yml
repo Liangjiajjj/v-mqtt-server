@@ -5,6 +5,7 @@ mqtt:
   ssl: false
   ssl_password: 1017941200
   cluster_enabled: true
+  redis_key_notify: true
   password_must: false
   work_threads: 16
   push_threads: 32

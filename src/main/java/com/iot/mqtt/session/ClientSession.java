@@ -2,10 +2,7 @@ package com.iot.mqtt.session;
 
 import com.alibaba.fastjson.JSONObject;
 import com.iot.mqtt.channel.MqttWill;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -14,6 +11,7 @@ import java.util.Optional;
  * @author liangjiajun
  */
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -42,6 +40,9 @@ public class ClientSession {
         if (Objects.nonNull(getWill()) && getWill().isWillFlag()) {
             object.put("will", getWill().toJson());
         }
+    /*    object.put("setListenerId", setListenerId);
+        object.put("deletedListenerId", deletedListenerId);
+        object.put("expiredListenerId", expiredListenerId);*/
         return object;
     }
 
@@ -52,6 +53,10 @@ public class ClientSession {
         Long md5Key = jsonObject.getLong("md5_key");
         Boolean isCleanSession = jsonObject.getBoolean("isCleanSession");
         MqttWill will = Optional.ofNullable(jsonObject.getJSONObject("will")).map(MqttWill::new).orElse(null);
+     /*   Integer setListenerId = jsonObject.getInteger("setListenerId");
+        Integer deletedListenerId = jsonObject.getInteger("deletedListenerId");
+        Integer expiredListenerId = jsonObject.getInteger("expiredListenerId");*/
         return new ClientSession(brokerId, clientId, md5Key, expire, will, isCleanSession);
+        // setListenerId, deletedListenerId, expiredListenerId);
     }
 }

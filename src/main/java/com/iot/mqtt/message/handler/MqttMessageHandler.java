@@ -90,6 +90,9 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
             if (idleStateEvent.state() == IdleState.ALL_IDLE) {
                 Channel channel = ctx.channel();
                 String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
+                if (Objects.isNull(clientId)){
+                    return;
+                }
                 ClientChannel clientChannel = clientChannelManager.get(clientId);
                 // 发送遗嘱消息
                 if (Objects.nonNull(clientChannel)) {

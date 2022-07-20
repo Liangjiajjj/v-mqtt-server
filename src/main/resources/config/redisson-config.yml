@@ -5,10 +5,10 @@ singleServerConfig:
   retryAttempts: 3
   retryInterval: 1500
   password: null
-  subscriptionsPerConnection: 5
+  subscriptionsPerConnection: 50
   clientName: null
   subscriptionConnectionMinimumIdleSize: 1
-  subscriptionConnectionPoolSize: 50
+  subscriptionConnectionPoolSize: 64
   connectionMinimumIdleSize: 24
   connectionPoolSize: 64
   database: 0

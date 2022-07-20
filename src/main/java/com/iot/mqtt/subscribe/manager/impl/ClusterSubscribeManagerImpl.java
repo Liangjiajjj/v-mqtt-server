@@ -63,9 +63,6 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     @Autowired
     private IRetainMessageManager retainMessageManager;
 
-    @Autowired
-    private IClientSessionManager clientSessionManager;
-
     @Resource(name = "PUBLISH-EXECUTOR")
     protected MqttEventExecuteGroup mqttEventExecuteGroup;
 
@@ -87,7 +84,7 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
         getTopic(RedisKeyConstant.SYN_SUBSCRIBE_TOPIC.getKey()).addListener(SubscribeOperation.class, (channel, operation) -> {
             // 本服务器不需要处理
             if (config.getBrokerId().equals(operation.getBrokerId())) {
-                log.info("syn subscribe topic not handle self !!!  operation brokerId :{} , brokerId:{}  ", operation.getBrokerId(), config.getBrokerId());
+                log.trace("syn subscribe topic not handle self !!!  operation brokerId :{} , brokerId:{}  ", operation.getBrokerId(), config.getBrokerId());
                 return;
             }
             OperationType operationType = OperationType.getOperationType(operation.getOperation());
@@ -143,7 +140,6 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     @Override
     // @RedisBatch
     public void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message) {
-        long startTime = System.currentTimeMillis();
         String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
         retainMessageManager.handlerRetainMessage(message, topicName);
@@ -155,7 +151,8 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
                 qosLevelMessageService.publish(clientChannel, subscribe, copyMessage);
             });
         });
-        log.info("publishSubscribes subscribes size {} , time : {} 's ", subscribes.size(), (System.currentTimeMillis() - startTime) / 1000d);
+        // long startTime = System.currentTimeMillis();
+        // log.info("publishSubscribes subscribes size {} , time : {} 's ", subscribes.size(), (System.currentTimeMillis() - startTime) / 1000d);
     }
 
     private void add0(Subscribe subscribe) {

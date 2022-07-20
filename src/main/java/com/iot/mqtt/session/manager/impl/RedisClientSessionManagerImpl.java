@@ -7,6 +7,7 @@ import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ import java.util.Optional;
  * @author liangjiajun
  */
 @Service
-@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
+@ConditionalOnExpression("${emqtt.cluster_enabled:true}&&${emqtt.redis_key_notify:false}")
 public class RedisClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObject> implements IClientSessionManager, RedisBaseService<JSONObject> {
 
     @Override
@@ -29,7 +30,7 @@ public class RedisClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObje
                 .clientId(clientId)
                 .isCleanSession(clientChannel.isCleanSession())
                 .will(clientChannel.will())
-
+                .md5Key(clientChannel.getMd5Key())
                 .build();
         setBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId), clientSession.toJson());
         if (expire > 0) {

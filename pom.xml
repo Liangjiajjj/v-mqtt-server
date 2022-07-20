@@ -20,7 +20,7 @@
         <fastjson.version>1.2.83</fastjson.version>
         <lombok.version>1.16.20</lombok.version>
         <hutool.version>5.8.1</hutool.version>
-        <redisson.version>3.13.6</redisson.version>
+        <redisson.version>3.17.4</redisson.version>
     </properties>
     <dependencies>
         <dependency>
@@ -105,6 +105,12 @@
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
             <version>${redisson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
         </dependency>
 
         <dependency>

@@ -56,11 +56,11 @@ public abstract class BaseQosLevelMessageService implements IQosLevelMessageServ
 
     protected void publish0(String toClientId, MqttPublishMessage message) {
         try {
-            ClientSession session = clientSessionManager.get(toClientId);
-            if (Objects.isNull(session)) {
+            if (!clientSessionManager.containsKey(toClientId)) {
                 log.error("publish0 session toClientId {} is null", toClientId);
                 return;
             }
+            ClientSession session = clientSessionManager.get(toClientId);
             String brokerId = session.getBrokerId();
             int messageId = messageIdService.getNextMessageId();
             // 不是在本机内的链接，转发

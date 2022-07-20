@@ -74,26 +74,28 @@ public class MqttServerConfiguration {
     }
 
     private void mqttServer() {
-        ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(bossGroup, workerGroup).channel(mqttConfig.getUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+        ServerBootstrap bootstrap = new ServerBootstrap().group(bossGroup, workerGroup).channel(mqttConfig.getUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO)).childHandler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel channel) {
-                ChannelPipeline channelPipeline = channel.pipeline();
-                // Netty心跳机制
-                channelPipeline.addFirst("idle", new IdleStateHandler(0, 0, mqttConfig.getKeepAlive()));
-                // Netty提供的SSL处理
-                if (mqttConfig.getSsl()) {
-                    SSLEngine sslEngine = sslContext.newEngine(channel.alloc());
-                    sslEngine.setUseClientMode(false);        // 服务端模式
-                    sslEngine.setNeedClientAuth(false);        // 不需要验证客户端
-                    channelPipeline.addLast("ssl", new SslHandler(sslEngine));
-                }
-                channelPipeline.addLast("decoder", new MqttDecoder());
-                channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
-                channelPipeline.addLast("broker", mqttMessageHandler);
-            }
-        }).option(ChannelOption.SO_BACKLOG, mqttConfig.getSoBacklog())
+                    @Override
+                    protected void initChannel(SocketChannel channel) {
+                        ChannelPipeline channelPipeline = channel.pipeline();
+                        // Netty心跳机制
+                        channelPipeline.addFirst("idle", new IdleStateHandler(0, 0, mqttConfig.getKeepAlive()));
+                        // Netty提供的SSL处理
+                        if (mqttConfig.getSsl()) {
+                            SSLEngine sslEngine = sslContext.newEngine(channel.alloc());
+                            sslEngine.setUseClientMode(false);        // 服务端模式
+                            sslEngine.setNeedClientAuth(false);        // 不需要验证客户端
+                            channelPipeline.addLast("ssl", new SslHandler(sslEngine));
+                        }
+                        channelPipeline.addLast("decoder", new MqttDecoder());
+                        channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
+                        channelPipeline.addLast("broker", mqttMessageHandler);
+                    }
+                })
+                .option(ChannelOption.SO_BACKLOG, mqttConfig.getSoBacklog())
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_KEEPALIVE, mqttConfig.getSoKeepAlive());
         if (Strings.isNotBlank(mqttConfig.getHost())) {
             bootstrap.bind(mqttConfig.getHost(), mqttConfig.getPort());
