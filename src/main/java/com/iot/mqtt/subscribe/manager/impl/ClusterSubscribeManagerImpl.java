@@ -18,10 +18,12 @@ import com.iot.mqtt.subscribe.SubscribeOperation;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import com.iot.mqtt.type.OperationType;
+import com.iot.mqtt.util.FutureUtil;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
+import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,9 +32,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -138,21 +142,31 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     }
 
     @Override
-    // @RedisBatch
     public void publishSubscribes(ClientChannel clientChannel, MqttPublishMessage message) {
+        long startTime = System.currentTimeMillis();
         String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
         retainMessageManager.handlerRetainMessage(message, topicName);
         Collection<Subscribe> subscribes = search(topicName);
+        List<CompletableFuture<Void>> futures = new ArrayList<>(subscribes.size());
+        MqttPublishMessage copyMessage = message.copy();
         subscribes.forEach(subscribe -> {
-            MqttPublishMessage copyMessage = message.copy();
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            futures.add(future);
             mqttEventExecuteGroup.get(subscribe.getMd5Key()).execute(() -> {
-                IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);
-                qosLevelMessageService.publish(clientChannel, subscribe, copyMessage);
+                try {
+                    IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);
+                    qosLevelMessageService.publish(clientChannel, subscribe, copyMessage);
+                    future.complete(null);
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
             });
         });
-        // long startTime = System.currentTimeMillis();
-        // log.info("publishSubscribes subscribes size {} , time : {} 's ", subscribes.size(), (System.currentTimeMillis() - startTime) / 1000d);
+        FutureUtil.waitForAll(futures).thenRun(() -> {
+            ReferenceCountUtil.release(copyMessage);
+            log.info("publishSubscribes subscribes size {} , time : {} 's ", subscribes.size(), (System.currentTimeMillis() - startTime) / 1000d);
+        });
     }
 
     private void add0(Subscribe subscribe) {

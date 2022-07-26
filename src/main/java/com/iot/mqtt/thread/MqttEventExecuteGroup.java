@@ -2,6 +2,7 @@ package com.iot.mqtt.thread;
 
 import io.netty.util.concurrent.*;
 import io.netty.util.internal.SystemPropertyUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import static io.netty.util.internal.ObjectUtil.checkPositive;
  *
  * @author liangjiajun
  */
+@Slf4j
 public class MqttEventExecuteGroup extends AbstractEventExecutorGroup {
 
     static final int DEFAULT_MAX_PENDING_EXECUTOR_TASKS = Math.max(16,
@@ -182,9 +184,26 @@ public class MqttEventExecuteGroup extends AbstractEventExecutorGroup {
         return children[(int) Math.abs(md5Key % children.length)];
     }
 
+    public EventExecutor[] getEventExecutor() {
+        return children;
+    }
+
     @Override
     public Iterator<EventExecutor> iterator() {
         return readonlyChildren.iterator();
+    }
+
+    /**
+     * 是否是在它应该的线程操作
+     * @param md5Key
+     */
+    public void assertEventLoop(Long md5Key) {
+        EventExecutor hopeThread = get(md5Key);
+        if (!hopeThread.inEventLoop(Thread.currentThread())) {
+            RuntimeException exception = new RuntimeException("");
+            log.error("MqttEventExecuteGroup 线程安全问题!!!!  md5Key : {} ", md5Key, exception);
+            throw exception;
+        }
     }
 
 }

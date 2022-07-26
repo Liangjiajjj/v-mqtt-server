@@ -1,7 +1,7 @@
 package com.iot.mqtt.channel;
 
-import com.alibaba.fastjson.JSONObject;
-import com.iot.mqtt.message.handler.base.IHandler;
+import com.iot.mqtt.message.handler.base.IMessageHandler;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.netty.handler.codec.mqtt.MqttProperties;
@@ -38,9 +38,11 @@ public interface ClientChannel {
 
     ClientChannel publishComplete(int publishMessageId);
 
-    void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain);
+    // void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain);
 
     void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId);
+
+    void publish(String topic, ByteBuf payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId);
 
     void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties);
 
@@ -64,7 +66,7 @@ public interface ClientChannel {
 
     int keepAliveTimeSeconds();
 
-    ClientChannel closeHandler(IHandler<Void> closeHandler);
+    ClientChannel closeHandler(IMessageHandler<Void> closeHandler);
 
     Channel getChannel();
 

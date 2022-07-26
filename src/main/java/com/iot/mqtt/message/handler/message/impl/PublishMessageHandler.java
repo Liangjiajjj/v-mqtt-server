@@ -25,6 +25,7 @@ public class PublishMessageHandler extends BaseMessageHandler<MqttPublishMessage
         String clientId = clientChannel.clientIdentifier();
         String topicName = message.variableHeader().topicName();
         MqttQoS mqttQoS = message.fixedHeader().qosLevel();
+        Integer messageId = message.variableHeader().packetId();
         if (log.isTraceEnabled()) {
             log.trace("received clientId : {} topic : {} qoS : {} message size: {}", clientId, topicName, mqttQoS, message.payload().readerIndex());
         }
@@ -39,7 +40,7 @@ public class PublishMessageHandler extends BaseMessageHandler<MqttPublishMessage
         subscribeManager.publishSubscribes(clientChannel, message);
         // 返回客户端
         IQosLevelMessageService qosLevelMessageService = getQosLevelMessageService(mqttQoS);
-        qosLevelMessageService.publishReply(clientChannel, message);
+        qosLevelMessageService.publishReply(clientChannel, messageId);
     }
 
 }

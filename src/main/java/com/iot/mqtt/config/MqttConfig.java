@@ -47,6 +47,37 @@ public class MqttConfig {
     @Value("${mqtt.cluster_enabled}")
     private Boolean clusterEnabled;
 
+
+    /**
+     * redis是否开启key变化通知
+     */
+    @Value("${mqtt.redis_key_notify}")
+    private Boolean isRedisKeyNotify;
+
+    /**
+     * 是否开启批量转发消息
+     */
+    @Value("${mqtt.is_batch_relay}")
+    private Boolean isBatchRelay;
+
+    /**
+     * 是否开启批量发消息
+     */
+    @Value("${mqtt.is_batch_push}")
+    private Boolean isBatchPush;
+
+    /**
+     * 每次批量发送多少条数据
+     */
+    @Value("${mqtt.batch_relay_count}")
+    private Integer batchRelayCount;
+
+    /**
+     * 最大能接受转发消息的延迟(单位：毫秒)
+     */
+    @Value("${mqtt.max_batch_relay_delay}")
+    private Integer maxBatchRelayDelay;
+
     /**
      * 逻辑线程池
      */

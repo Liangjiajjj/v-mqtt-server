@@ -1,6 +1,8 @@
 package com.iot.mqtt.relay;
 
 
+import com.iot.mqtt.dup.PublishMessageStore;
+import com.iot.mqtt.session.ClientSession;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 /**
@@ -9,10 +11,25 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
 public interface IRelayMessageService {
     /**
      * 转发消息
-     * @param brokerId
-     * @param clientId
+     *
+     * @param clientSession
      * @param messageId
      * @param message
      */
-    void relayMessage(String brokerId,String clientId, int messageId, MqttPublishMessage message);
+    void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message);
+
+    /**
+     * 批量转发消息
+     *
+     * @param clientSession
+     * @param publishMessage
+     */
+    void batchPublish(ClientSession clientSession, PublishMessageStore publishMessage);
+
+    /**
+     * 批量转发消息
+     *
+     */
+    void batchPublish0();
+
 }

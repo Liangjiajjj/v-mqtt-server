@@ -2,6 +2,8 @@ package com.iot.mqtt.channel;
 
 import com.alibaba.fastjson.JSONObject;
 import com.iot.mqtt.message.handler.base.IHandler;
+import com.iot.mqtt.message.handler.base.IMessageHandler;
+import com.iot.mqtt.util.Md5Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -29,11 +31,6 @@ public class ClientChannelImpl implements ClientChannel {
     private static final int MAX_MESSAGE_ID = 65535;
 
     /**
-     * md5 解析器
-     */
-    private static MessageDigest md5 = null;
-
-    /**
      * 管道
      */
     private final Channel channel;
@@ -47,7 +44,7 @@ public class ClientChannelImpl implements ClientChannel {
     /**
      * 关闭处理器
      */
-    private IHandler<Void> closeHandler;
+    private IMessageHandler<Void> closeHandler;
 
     /**
      * id生成器（内存）
@@ -104,14 +101,6 @@ public class ClientChannelImpl implements ClientChannel {
      */
     private final Long md5Key;
 
-    static {
-        try {
-            md5 = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("no md5 algrithm found");
-        }
-    }
-
     public ClientChannelImpl(Channel channel) {
         this.channel = channel;
         this.clientIdentifier = null;
@@ -161,7 +150,7 @@ public class ClientChannelImpl implements ClientChannel {
         this.connectProperties = msg.variableHeader().properties();
         this.channel = channel;
         this.executor = executor;
-        this.md5Key = hash(clientIdentifier);
+        this.md5Key = Md5Util.hash(clientIdentifier);
     }
 
     public String getId() {
@@ -174,10 +163,9 @@ public class ClientChannelImpl implements ClientChannel {
     }
 
     @Override
-    public void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain) {
-        publish(topic, payload, qosLevel, isDup, isRetain, nextMessageId(), MqttProperties.NO_PROPERTIES);
+    public void publish(String topic, ByteBuf payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId) {
+        publish(topic, payload, qosLevel, isDup, isRetain, messageId, MqttProperties.NO_PROPERTIES);
     }
-
 
     @Override
     public void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties) {
@@ -197,6 +185,21 @@ public class ClientChannelImpl implements ClientChannel {
         this.write(publish);
     }
 
+    public void publish(String topic, ByteBuf payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties) {
+        if (messageId > MAX_MESSAGE_ID || messageId < 0) {
+            throw new IllegalArgumentException("messageId must be non-negative integer not larger than " + MAX_MESSAGE_ID);
+        }
+
+        MqttFixedHeader fixedHeader =
+                new MqttFixedHeader(MqttMessageType.PUBLISH, isDup, qosLevel, isRetain, 0);
+        MqttPublishVariableHeader variableHeader =
+                new MqttPublishVariableHeader(topic, messageId, properties);
+
+        io.netty.handler.codec.mqtt.MqttMessage publish = MqttMessageFactory.newMessage(fixedHeader, variableHeader, payload);
+
+        this.write(publish);
+    }
+
 
     @Override
     public ClientChannelImpl pong() {
@@ -206,7 +209,7 @@ public class ClientChannelImpl implements ClientChannel {
 
         io.netty.handler.codec.mqtt.MqttMessage pingresp = MqttMessageFactory.newMessage(fixedHeader, null, null);
 
-        this.write(pingresp);
+        this.writeAndFlush(pingresp);
 
         return this;
     }
@@ -225,7 +228,7 @@ public class ClientChannelImpl implements ClientChannel {
 
         io.netty.handler.codec.mqtt.MqttMessage unsuback = MqttMessageFactory.newMessage(fixedHeader, variableHeader, null);
 
-        this.write(unsuback);
+        this.writeAndFlush(unsuback);
 
         return this;
     }
@@ -235,7 +238,7 @@ public class ClientChannelImpl implements ClientChannel {
         MqttPubAckMessage puback = (MqttPubAckMessage) MqttMessageFactory.newMessage(
                 new MqttFixedHeader(MqttMessageType.PUBACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 MqttMessageIdVariableHeader.from(publishMessageId), null);
-        this.write(puback);
+        this.writeAndFlush(puback);
         return this;
     }
 
@@ -252,7 +255,7 @@ public class ClientChannelImpl implements ClientChannel {
 
         io.netty.handler.codec.mqtt.MqttMessage pubrel = MqttMessageFactory.newMessage(fixedHeader, variableHeader, null);
 
-        this.write(pubrel);
+        this.writeAndFlush(pubrel);
 
         return this;
     }
@@ -270,7 +273,7 @@ public class ClientChannelImpl implements ClientChannel {
 
         io.netty.handler.codec.mqtt.MqttMessage pubcomp = MqttMessageFactory.newMessage(fixedHeader, variableHeader, null);
 
-        this.write(pubcomp);
+        this.writeAndFlush(pubcomp);
         return this;
     }
 
@@ -321,7 +324,7 @@ public class ClientChannelImpl implements ClientChannel {
 
         io.netty.handler.codec.mqtt.MqttMessage connack = MqttMessageFactory.newMessage(fixedHeader, variableHeader, null);
 
-        write(connack);
+        writeAndFlush(connack);
 
         if (returnCode != MqttConnectReturnCode.CONNECTION_ACCEPTED) {
             this.close();
@@ -349,7 +352,7 @@ public class ClientChannelImpl implements ClientChannel {
 
         io.netty.handler.codec.mqtt.MqttMessage suback = MqttMessageFactory.newMessage(fixedHeader, variableHeader, payload);
 
-        this.write(suback);
+        this.writeAndFlush(suback);
 
         return this;
     }
@@ -367,18 +370,36 @@ public class ClientChannelImpl implements ClientChannel {
 
         io.netty.handler.codec.mqtt.MqttMessage pubrec = MqttMessageFactory.newMessage(fixedHeader, variableHeader, null);
 
-        this.write(pubrec);
+        this.writeAndFlush(pubrec);
 
         return this;
     }
 
-    private ChannelFuture write(MqttMessage mqttMessage) {
+    private void write(MqttMessage mqttMessage) {
+        write0(mqttMessage, false);
+    }
+
+    private void writeAndFlush(MqttMessage mqttMessage) {
+        write0(mqttMessage, true);
+    }
+
+    private void write0(MqttMessage mqttMessage, boolean flush) {
         synchronized (this.channel) {
             if (mqttMessage.fixedHeader().messageType() != MqttMessageType.CONNACK) {
                 this.checkConnected();
             }
-            return this.channel.writeAndFlush(mqttMessage);
+            if (channel.isWritable()) {
+                if (flush) {
+                    this.channel.writeAndFlush(mqttMessage);
+                } else {
+                    this.channel.write(mqttMessage);
+                }
+            }
         }
+    }
+
+    public void flush() {
+        this.channel.flush();
     }
 
     private void checkClosed() {
@@ -435,7 +456,7 @@ public class ClientChannelImpl implements ClientChannel {
     }
 
     @Override
-    public ClientChannel closeHandler(IHandler<Void> handler) {
+    public ClientChannel closeHandler(IMessageHandler<Void> handler) {
         synchronized (this.channel) {
             this.checkClosed();
             this.closeHandler = handler;
@@ -458,24 +479,5 @@ public class ClientChannelImpl implements ClientChannel {
         return md5Key;
     }
 
-    private int nextMessageId() {
-        // if 0 or MAX_MESSAGE_ID, it becomes 1 (first valid messageId)
-        this.messageIdCounter = ((this.messageIdCounter % MAX_MESSAGE_ID) != 0) ? this.messageIdCounter + 1 : 1;
-        return this.messageIdCounter;
-    }
-
-    /*
-     * 实现一致性哈希算法中使用的哈希函数,使用MD5算法来保证一致性哈希的平衡性
-     */
-    private long hash(String key) {
-        md5.reset();
-        md5.update(key.getBytes());
-        byte[] bKey = md5.digest();
-        //具体的哈希函数实现细节--每个字节 & 0xFF 再移位
-        long result = ((long) (bKey[3] & 0xFF) << 24)
-                | ((long) (bKey[2] & 0xFF) << 16
-                | ((long) (bKey[1] & 0xFF) << 8) | (long) (bKey[0] & 0xFF));
-        return result & 0xffffffffL;
-    }
 
 }

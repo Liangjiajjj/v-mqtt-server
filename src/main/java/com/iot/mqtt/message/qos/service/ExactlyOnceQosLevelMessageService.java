@@ -33,7 +33,7 @@ public class ExactlyOnceQosLevelMessageService extends BaseQosLevelMessageServic
     }
 
     @Override
-    public void publishReply(ClientChannel channel, MqttPublishMessage message) {
-        channel.publishRelease(message.variableHeader().messageId());
+    public void publishReply(ClientChannel channel, Integer messageId) {
+        channel.publishRelease(messageId);
     }
 }

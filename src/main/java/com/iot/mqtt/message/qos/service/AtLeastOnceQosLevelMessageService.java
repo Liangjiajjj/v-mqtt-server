@@ -31,8 +31,8 @@ public class AtLeastOnceQosLevelMessageService extends BaseQosLevelMessageServic
     }
 
     @Override
-    public void publishReply(ClientChannel channel, MqttPublishMessage message) {
-        channel.publishAcknowledge(message.variableHeader().messageId());
+    public void publishReply(ClientChannel channel, Integer messageId) {
+        channel.publishAcknowledge(messageId);
     }
 
 }

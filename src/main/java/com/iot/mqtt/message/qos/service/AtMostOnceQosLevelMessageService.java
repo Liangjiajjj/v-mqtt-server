@@ -22,7 +22,7 @@ public class AtMostOnceQosLevelMessageService extends BaseQosLevelMessageService
     }
 
     @Override
-    public void publishReply(ClientChannel channel, MqttPublishMessage message) {
+    public void publishReply(ClientChannel channel, Integer messageId) {
 
     }
 }

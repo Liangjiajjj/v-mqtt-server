@@ -2,7 +2,7 @@ package com.iot.mqtt.context;
 
 import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.constant.CommonConstant;
-import com.iot.mqtt.message.handler.base.IHandler;
+import com.iot.mqtt.message.handler.base.IMessageHandler;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
 import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import io.netty.handler.codec.mqtt.MqttMessageType;
@@ -44,8 +44,8 @@ public class MqttServiceContext {
      * @param messageType
      * @return
      */
-    public IHandler getMessageHandler(MqttMessageType messageType) {
-        return context.getBean(messageType.name() + CommonConstant.MQTT_MESSAGE_HANDLER, IHandler.class);
+    public IMessageHandler getMessageHandler(MqttMessageType messageType) {
+        return context.getBean(messageType.name() + CommonConstant.MQTT_MESSAGE_HANDLER, IMessageHandler.class);
     }
 
     @Bean(value = "PUBLISH-EXECUTOR")

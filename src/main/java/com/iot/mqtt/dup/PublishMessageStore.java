@@ -22,6 +22,8 @@ public class PublishMessageStore extends BaseTopicBean {
 
     private String clientId;
 
+    private String brokerId;
+
     private String topic;
 
     private int mqttQoS;
@@ -46,6 +48,14 @@ public class PublishMessageStore extends BaseTopicBean {
         byte[] messageBytes = new byte[message.payload().readableBytes()];
         message.payload().getBytes(message.payload().readerIndex(), messageBytes);
         return PublishMessageStore.builder().clientId(clientId).messageId(message.variableHeader().messageId())
+                .topic(message.variableHeader().topicName()).mqttQoS(message.fixedHeader().qosLevel().value())
+                .messageBytes(messageBytes).build();
+    }
+
+    public static PublishMessageStore fromMessage(String brokerId, String clientId, MqttPublishMessage message) {
+        byte[] messageBytes = new byte[message.payload().readableBytes()];
+        message.payload().getBytes(message.payload().readerIndex(), messageBytes);
+        return PublishMessageStore.builder().brokerId(brokerId).clientId(clientId).messageId(message.variableHeader().messageId())
                 .topic(message.variableHeader().topicName()).mqttQoS(message.fixedHeader().qosLevel().value())
                 .messageBytes(messageBytes).build();
     }

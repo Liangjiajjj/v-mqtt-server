@@ -4,8 +4,11 @@ import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.MqttWill;
 import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.message.handler.base.IHandler;
+import com.iot.mqtt.message.handler.base.IMessageHandler;
+import com.iot.mqtt.messageid.service.IMessageIdService;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
+import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +22,12 @@ import java.util.Objects;
  * @author liangjiajun
  */
 @Service
-public class CloseMessageHandler implements IHandler<Void> {
+public class CloseMessageHandler implements IMessageHandler<Void> {
 
+    @Autowired
+    private ISubscribeManager subscribeManager;
+    @Autowired
+    private IMessageIdService messageIdService;
     @Autowired
     private IClientChannelManager clientChannelManager;
     @Autowired
@@ -39,7 +46,10 @@ public class CloseMessageHandler implements IHandler<Void> {
             if (will.isWillFlag()) {
                 clientChannel.publish(will.getWillTopic(), will.getWillMessage(),
                         MqttQoS.valueOf(will.getWillQos()),
-                        false, false);
+                        false, false, messageIdService.getNextMessageId());
+            }
+            if (clientSession.getIsCleanSession()) {
+                subscribeManager.removeForClient(clientId);
             }
         }
     }

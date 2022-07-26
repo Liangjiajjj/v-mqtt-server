@@ -27,6 +27,9 @@ public class DisconnectMessageHandler extends BaseMessageHandler<MqttMessage> {
         log.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, clientSession.getIsCleanSession());
         clientSessionManager.remove(clientId);
         clientChannelManager.remove(clientId);
+        if (clientSession.getIsCleanSession()) {
+            subscribeManager.removeForClient(clientId);
+        }
         channel.close();
     }
 }

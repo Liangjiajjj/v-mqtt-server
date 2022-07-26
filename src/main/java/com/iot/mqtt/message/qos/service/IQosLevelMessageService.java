@@ -33,9 +33,8 @@ public interface IQosLevelMessageService {
     /**
      * 回复
      * @param channel
-     * @param message
      */
-    default void publishReply(ClientChannel channel, MqttPublishMessage message) {
+    default void publishReply(ClientChannel channel, Integer messageId) {
 
     }
 

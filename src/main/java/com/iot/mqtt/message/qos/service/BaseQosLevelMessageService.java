@@ -68,7 +68,7 @@ public abstract class BaseQosLevelMessageService implements IQosLevelMessageServ
                 if (log.isTraceEnabled()) {
                     log.trace("relay message brokerId:{} , clientId:{} , messageId:{} ", brokerId, toClientId, messageId);
                 }
-                relayMessageService.relayMessage(brokerId, toClientId, messageId, message);
+                relayMessageService.relayMessage(session, messageId, message);
                 return;
             }
             ClientChannel channel = clientChannelManager.get(toClientId);
@@ -79,14 +79,13 @@ public abstract class BaseQosLevelMessageService implements IQosLevelMessageServ
             if (log.isTraceEnabled()) {
                 log.trace("publish message brokerId:{} , clientId:{} , messageId:{} ", brokerId, toClientId, messageId);
             }
-            byte[] messageBytes = new byte[message.payload().readableBytes()];
-            message.payload().getBytes(message.payload().readerIndex(), messageBytes);
-            channel.publish(message.variableHeader().topicName(), messageBytes, message.fixedHeader().qosLevel(), false, false, messageId);
+            message.payload().retain();
+            channel.publish(message.variableHeader().topicName(), message.payload(), message.fixedHeader().qosLevel(), false, false, messageId);
         } catch (Exception e) {
             log.error("publish0 session toClientId {} error !!!! ", toClientId);
-        } finally {
+        }/* finally {
             ReferenceCountUtil.release(message);
-        }
+        }*/
     }
 
 }

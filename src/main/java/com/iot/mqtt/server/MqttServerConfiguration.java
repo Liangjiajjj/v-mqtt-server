@@ -1,12 +1,10 @@
 package com.iot.mqtt.server;
 
 import com.iot.mqtt.config.MqttConfig;
+import com.iot.mqtt.message.handler.AutoFlushHandler;
 import com.iot.mqtt.message.handler.MqttMessageHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -30,6 +28,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author liangjiajun
@@ -80,7 +79,7 @@ public class MqttServerConfiguration {
                     protected void initChannel(SocketChannel channel) {
                         ChannelPipeline channelPipeline = channel.pipeline();
                         // Netty心跳机制
-                        channelPipeline.addFirst("idle", new IdleStateHandler(0, 0, mqttConfig.getKeepAlive()));
+                        channelPipeline.addLast("idle", new IdleStateHandler(0, 0, mqttConfig.getKeepAlive()));
                         // Netty提供的SSL处理
                         if (mqttConfig.getSsl()) {
                             SSLEngine sslEngine = sslContext.newEngine(channel.alloc());
@@ -88,6 +87,7 @@ public class MqttServerConfiguration {
                             sslEngine.setNeedClientAuth(false);        // 不需要验证客户端
                             channelPipeline.addLast("ssl", new SslHandler(sslEngine));
                         }
+                        channelPipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
                         channelPipeline.addLast("decoder", new MqttDecoder());
                         channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
                         channelPipeline.addLast("broker", mqttMessageHandler);
@@ -96,7 +96,8 @@ public class MqttServerConfiguration {
                 .option(ChannelOption.SO_BACKLOG, mqttConfig.getSoBacklog())
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .childOption(ChannelOption.TCP_NODELAY, true)
-                .childOption(ChannelOption.SO_KEEPALIVE, mqttConfig.getSoKeepAlive());
+                .childOption(ChannelOption.SO_KEEPALIVE, mqttConfig.getSoKeepAlive())
+                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT);
         if (Strings.isNotBlank(mqttConfig.getHost())) {
             bootstrap.bind(mqttConfig.getHost(), mqttConfig.getPort());
         } else {

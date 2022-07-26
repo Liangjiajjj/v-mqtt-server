@@ -19,8 +19,7 @@ public class PingHandler extends BaseMessageHandler<MqttMessage> {
     public void handle0(ClientChannel clientChannel, MqttMessage message) {
         String clientId = clientChannel.clientIdentifier();
         ClientSession clientSession = clientSessionManager.get(clientId);
-        if (Objects.nonNull(clientSession)) {
-            clientSessionManager.expire(clientId, clientSession.getExpire());
-        }
+        clientSessionManager.expire(clientId, clientSession.getExpire());
+        clientChannel.pong();
     }
 }

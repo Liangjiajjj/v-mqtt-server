@@ -7,6 +7,7 @@ import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.dup.manager.IDupPubRelMessageManager;
 import com.iot.mqtt.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
+import com.iot.mqtt.messageid.service.IMessageIdService;
 import com.iot.mqtt.session.manager.IClientSessionManager;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.channel.Channel;
@@ -22,12 +23,14 @@ import java.util.Objects;
  * @author liangjiajun
  */
 @Slf4j
-public abstract class BaseMessageHandler<E extends MqttMessage> implements IHandler<E> {
+public abstract class BaseMessageHandler<E extends MqttMessage> implements IMessageHandler<E> {
 
     @Autowired
     protected MqttConfig mqttConfig;
     @Autowired
     protected MqttServiceContext context;
+    @Autowired
+    protected IMessageIdService messageIdService;
     @Autowired
     protected IClientSessionManager clientSessionManager;
     @Autowired

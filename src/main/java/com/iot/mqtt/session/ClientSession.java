@@ -13,6 +13,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClientSession {

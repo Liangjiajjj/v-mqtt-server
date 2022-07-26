@@ -7,27 +7,25 @@ import com.google.common.cache.LoadingCache;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.constant.RedisKeyConstant;
+import com.iot.mqtt.event.SessionRefreshEvent;
 import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.LocalClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.annotation.Pointcut;
 import org.redisson.api.DeletedObjectListener;
 import org.redisson.api.ExpiredObjectListener;
 import org.redisson.api.RBucket;
 import org.redisson.api.listener.SetObjectListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,6 +40,10 @@ public class RedisLocalClientSessionManagerImpl extends RedisBaseServiceImpl<JSO
 
     @Autowired
     private MqttConfig mqttConfig;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     /**
      * 本进程的会话对象，需要监听 CLIENT_SESSION_KEY 的变动
      */
@@ -62,11 +64,16 @@ public class RedisLocalClientSessionManagerImpl extends RedisBaseServiceImpl<JSO
     }
 
     private LocalClientSession getLocalClientSession(String clientId) {
-        Optional<LocalClientSession> optional = Optional.ofNullable(getBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId)).get())
+        JSONObject jsonObject = getBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId)).get();
+        Optional<LocalClientSession> optional = Optional.ofNullable(jsonObject)
                 .map((json) -> new ClientSession().fromJson(json))
                 .map(session -> LocalClientSession.builder().clientSession(session).build());
         optional.ifPresent((localClientSession -> initListener(clientId, localClientSession)));
-        return optional.orElse(null);
+        LocalClientSession localClientSession = optional.orElse(null);
+        if (log.isTraceEnabled()) {
+            log.trace("load ClientSession {}", jsonObject);
+        }
+        return localClientSession;
     }
 
     @Override
@@ -147,6 +154,9 @@ public class RedisLocalClientSessionManagerImpl extends RedisBaseServiceImpl<JSO
         clientSession.setSetListenerId(setListenerId);
         clientSession.setExpiredListenerId(expiredListenerId);
         clientSession.setDeletedListenerId(deletedListenerId);
+        if (log.isTraceEnabled()) {
+            log.trace("initListener LocalClientSession {}", clientSession);
+        }
     }
 
     /**
@@ -161,6 +171,9 @@ public class RedisLocalClientSessionManagerImpl extends RedisBaseServiceImpl<JSO
                 bucket.removeListener(localClientSession.getSetListenerId());
                 bucket.removeListener(localClientSession.getDeletedListenerId());
                 bucket.removeListener(localClientSession.getExpiredListenerId());
+                if (log.isTraceEnabled()) {
+                    log.trace("removeListener LocalClientSession {}", bucket.get());
+                }
             }
         }
     }
@@ -172,10 +185,9 @@ public class RedisLocalClientSessionManagerImpl extends RedisBaseServiceImpl<JSO
      */
     private void refresh(String redisKey) {
         String clientId = redisKey.split(":")[2];
-        LOCAL_SESSION_MAP.refresh(clientId);
-        if (log.isTraceEnabled()) {
-            log.trace("Local ClientSession refresh clientId {} ", clientId);
-        }
+        LOCAL_SESSION_MAP.invalidate(clientId);
+        eventPublisher.publishEvent(SessionRefreshEvent.builder().clientId(clientId).build());
+        log.info("Local ClientSession refresh clientId {} ", clientId);
     }
 
 

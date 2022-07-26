@@ -134,7 +134,8 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
             String clientId = clientChannel.clientIdentifier();
             for (MqttPublishMessage mqttPublishMessage : dupPublishMessageManager.get(clientId)) {
                 clientChannel.publish(mqttPublishMessage.variableHeader().topicName(), mqttPublishMessage.payload().array(),
-                        mqttPublishMessage.fixedHeader().qosLevel(), true, false);
+                        mqttPublishMessage.fixedHeader().qosLevel(), true, false
+                        , messageIdService.getNextMessageId());
             }
             for (DupPubRelMessage dupPubRelMessage : dupPubRelMessageManager.get(clientId)) {
                 clientChannel.publishRelease(dupPubRelMessage.getMessageId());

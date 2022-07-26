@@ -6,11 +6,16 @@ import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.context.MqttServiceContext;
 import com.iot.mqtt.message.handler.base.IHandler;
+import com.iot.mqtt.message.handler.base.IMessageHandler;
 import com.iot.mqtt.redis.annotation.RedisBatch;
+import com.iot.mqtt.session.ClientSession;
+import com.iot.mqtt.session.manager.IClientSessionManager;
+import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.channel.*;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author liangjiajun
@@ -36,7 +43,13 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
     protected MqttServiceContext mqttServiceContext;
 
     @Autowired
+    private ISubscribeManager subscribeManager;
+
+    @Autowired
     private IClientChannelManager clientChannelManager;
+
+    @Autowired
+    private IClientSessionManager clientSessionManager;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -45,6 +58,19 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        Attribute<Object> attribute = ctx.channel().attr(AttributeKey.valueOf("clientId"));
+        if (Objects.nonNull(attribute)) {
+            log.info("channelInactive clientId {} ", attribute.get());
+        }
+        Optional.of(attribute).map(Attribute::get).map(o -> (String) o)
+                .ifPresent(clientId -> {
+                    ClientSession clientSession = clientSessionManager.get(clientId);
+                    clientChannelManager.remove(clientId);
+                    clientSessionManager.remove(clientId);
+                    if (Objects.nonNull(clientSession) && clientSession.getIsCleanSession()) {
+                        subscribeManager.removeForClient(clientId);
+                    }
+                });
         super.channelInactive(ctx);
     }
 
@@ -54,11 +80,11 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
             rejectFailure(ctx, message);
             // 解析协议
             MqttMessageType messageType = message.fixedHeader().messageType();
-            IHandler messageHandler = mqttServiceContext.getMessageHandler(messageType);
+            IMessageHandler messageHandler = mqttServiceContext.getMessageHandler(messageType);
             messageHandler.handle(ctx.channel(), message);
         } catch (Exception e) {
             ReferenceCountUtil.release(message);
-            log.error("message handler is null type {} ", message.fixedHeader().messageType());
+            log.error("message handler is null type {} ", message.fixedHeader().messageType(), e);
         }
 
     }
@@ -90,7 +116,7 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
             if (idleStateEvent.state() == IdleState.ALL_IDLE) {
                 Channel channel = ctx.channel();
                 String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
-                if (Objects.isNull(clientId)){
+                if (Objects.isNull(clientId)) {
                     return;
                 }
                 ClientChannel clientChannel = clientChannelManager.get(clientId);
@@ -107,7 +133,13 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("exceptionCaught", cause);
-        super.exceptionCaught(ctx, cause);
+        if (cause instanceof IOException) {
+            // 远程主机强迫关闭了一个现有的连接的异常
+            ctx.close();
+        } else {
+            super.exceptionCaught(ctx, cause);
+        }
     }
+
+
 }
