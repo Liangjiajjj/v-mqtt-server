@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * @author liangjiajun
  * 至少一次
@@ -21,10 +23,10 @@ public class AtLeastOnceQosLevelMessageService extends BaseQosLevelMessageServic
     private IDupPublishMessageManager dupPublishMessageManager;
 
     @Override
-    public void publish(ClientChannel fromChannel, Subscribe subscribe, MqttPublishMessage message) {
+    public void publish(ClientChannel fromChannel, Subscribe subscribe, MqttPublishMessage message, CompletableFuture<Void> future) {
         String clientId = subscribe.getClientId();
         log.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribe.getClientId(), subscribe.getTopicFilter(), subscribe.getMqttQoS());
-        publish0(clientId, message);
+        publish0(clientId, message, future);
         // qos = 1/2 需要保存消息，确保发送到位
         // qos 1 收到 PubAck 证明已经完成这次发送 publish 发送
         dupPublishMessageManager.put(clientId, message);

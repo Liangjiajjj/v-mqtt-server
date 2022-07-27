@@ -1,13 +1,10 @@
 package com.iot.mqtt.channel;
 
-import com.alibaba.fastjson.JSONObject;
-import com.iot.mqtt.message.handler.base.IHandler;
 import com.iot.mqtt.message.handler.base.IMessageHandler;
 import com.iot.mqtt.util.Md5Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.util.concurrent.EventExecutor;
 import lombok.AllArgsConstructor;
@@ -15,8 +12,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -165,6 +160,13 @@ public class ClientChannelImpl implements ClientChannel {
     @Override
     public void publish(String topic, ByteBuf payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId) {
         publish(topic, payload, qosLevel, isDup, isRetain, messageId, MqttProperties.NO_PROPERTIES);
+    }
+
+    @Override
+    public void publish(int messageId, MqttPublishMessage publishMessage) {
+        this.publish(publishMessage.variableHeader().topicName(),
+                publishMessage.payload(), publishMessage.fixedHeader().qosLevel(),
+                false, false, messageId);
     }
 
     @Override

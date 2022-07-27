@@ -133,9 +133,15 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
         if (!clientChannel.isCleanSession()) {
             String clientId = clientChannel.clientIdentifier();
             for (MqttPublishMessage mqttPublishMessage : dupPublishMessageManager.get(clientId)) {
-                clientChannel.publish(mqttPublishMessage.variableHeader().topicName(), mqttPublishMessage.payload().array(),
-                        mqttPublishMessage.fixedHeader().qosLevel(), true, false
-                        , messageIdService.getNextMessageId());
+                try {
+                    clientChannel.publish(mqttPublishMessage.variableHeader().topicName(), mqttPublishMessage.payload().array(),
+                            mqttPublishMessage.fixedHeader().qosLevel(), true, false
+                            , messageIdService.getNextMessageId());
+                } catch (Throwable throwable) {
+                    log.error("handleQosMessage error !!!", throwable);
+                } finally {
+                    ReferenceCountUtil.release(mqttPublishMessage);
+                }
             }
             for (DupPubRelMessage dupPubRelMessage : dupPubRelMessageManager.get(clientId)) {
                 clientChannel.publishRelease(dupPubRelMessage.getMessageId());

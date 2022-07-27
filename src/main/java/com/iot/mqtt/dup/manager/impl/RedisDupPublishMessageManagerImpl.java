@@ -28,7 +28,7 @@ public class RedisDupPublishMessageManagerImpl extends RedisBaseServiceImpl<Publ
     @Override
     public Collection<MqttPublishMessage> get(String clientId) {
         return getMap(RedisKeyConstant.DUP_PUBLISH_KEY.getKey(clientId)).values()
-                .stream().map(PublishMessageStore::toMessage)
+                .stream().map(PublishMessageStore::toDirectMessage)
                 .collect(Collectors.toList());
     }
 

@@ -68,7 +68,7 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
     private IRetainMessageManager retainMessageManager;
 
     @Resource(name = "PUBLISH-EXECUTOR")
-    protected MqttEventExecuteGroup mqttEventExecuteGroup;
+    protected MqttEventExecuteGroup publishExecutor;
 
     @PostConstruct
     private void init() {
@@ -153,19 +153,23 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
         subscribes.forEach(subscribe -> {
             CompletableFuture<Void> future = new CompletableFuture<>();
             futures.add(future);
-            mqttEventExecuteGroup.get(subscribe.getMd5Key()).execute(() -> {
+            publishExecutor.get(subscribe.getMd5Key()).execute(() -> {
                 try {
                     IQosLevelMessageService qosLevelMessageService = mqttServiceContext.getQosLevelMessageService(mqttQoS);
-                    qosLevelMessageService.publish(clientChannel, subscribe, copyMessage);
-                    future.complete(null);
+                    qosLevelMessageService.publish(clientChannel, subscribe, copyMessage, future);
                 } catch (Exception e) {
                     future.completeExceptionally(e);
+                    log.error("publishSubscribes publish error !!! ", e);
                 }
             });
         });
         FutureUtil.waitForAll(futures).thenRun(() -> {
-            ReferenceCountUtil.release(copyMessage);
-            log.info("publishSubscribes subscribes size {} , time : {} 's ", subscribes.size(), (System.currentTimeMillis() - startTime) / 1000d);
+            try {
+                ReferenceCountUtil.release(copyMessage);
+                log.info("publishSubscribes subscribes size {} , time : {} 's ", subscribes.size(), (System.currentTimeMillis() - startTime) / 1000d);
+            } catch (Exception e) {
+                log.error("publishSubscribes release error !!! ", e);
+            }
         });
     }
 

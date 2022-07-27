@@ -15,6 +15,7 @@ import com.iot.mqtt.session.manager.RelayMessageQueue;
 import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import com.iot.mqtt.util.Md5Util;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.EventExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,8 +40,13 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
 
     @Autowired
     private MqttConfig mqttConfig;
+
     @Resource(name = "PUBLISH-EXECUTOR")
-    private MqttEventExecuteGroup mqttEventExecuteGroup;
+    private MqttEventExecuteGroup publishExecutor;
+
+    @Resource(name = "RELAY-PUBLISH-EXECUTOR")
+    private MqttEventExecuteGroup relayPublishExecutor;
+
     @Autowired
     private IClientChannelManager clientChannelManager;
     /**
@@ -68,11 +75,15 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
                 log.warn("receive relay message, Channel is null ... clientId:{} , messageId:{} ", clientId, msg.getMessageId());
                 return;
             }
-            MqttPublishMessage publishMessage = msg.toMessage();
-            mqttEventExecuteGroup.get(clientChannel.getMd5Key()).execute(() -> {
-                clientChannel.publish(publishMessage.variableHeader().topicName(),
-                        publishMessage.payload().array(), publishMessage.fixedHeader().qosLevel(),
-                        false, false, messageId);
+            MqttPublishMessage publishMessage = msg.toDirectMessage();
+            publishExecutor.get(clientChannel.getMd5Key()).execute(() -> {
+                try {
+                    clientChannel.publish(messageId, publishMessage);
+                } catch (Throwable throwable) {
+                    log.error("listener relay error message !!!", throwable);
+                } finally {
+                    ReferenceCountUtil.release(publishMessage);
+                }
             });
         });
         // 如果是批量转发，创建定时线程池
@@ -81,29 +92,45 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
         }
     }
 
-
     @Override
-    public void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message) {
-        mqttEventExecuteGroup.assertEventLoop(clientSession.getMd5Key());
-        PublishMessageStore publishMessage = PublishMessageStore.fromMessage(clientSession.getBrokerId(),
-                clientSession.getClientId(), message);
-        publishMessage.setMessageId(messageId);
-        if (mqttConfig.getIsBatchRelay() && mqttConfig.getIsRedisKeyNotify()) {
-            batchPublish(clientSession, publishMessage);
-        } else {
-            publish(RedisKeyConstant.RELAY_MESSAGE_TOPIC.getKey(clientSession.getBrokerId()), publishMessage);
-        }
+    public void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message, CompletableFuture<Void> future) {
+        relayPublishExecutor.get(clientSession.getMd5Key()).execute(() -> {
+            relayMessage0(clientSession, messageId, message);
+            future.complete(null);
+        });
     }
 
     @Override
     public void batchPublish(ClientSession clientSession, PublishMessageStore publishMessage) {
-        mqttEventExecuteGroup.assertEventLoop(clientSession.getMd5Key());
+        relayPublishExecutor.assertEventLoop(clientSession.getMd5Key());
         RelayMessageQueue relayMessageQueue = getLocalRelayMessageQueue();
         relayMessageQueue.add(publishMessage);
         if (relayMessageQueue.isCanPush(mqttConfig.getBatchRelayCount())) {
             // 发送当前线程所有的队列
             log.info("canPush batch publish relay message !!! ");
             batchPublish0();
+        }
+    }
+
+
+    /**
+     * session变化是应该推送完所有的数据给它
+     *
+     * @param event
+     */
+    @EventListener
+    public void onSessionRefreshEvent(SessionRefreshEvent event) {
+        if (mqttConfig.getIsBatchRelay() && mqttConfig.getIsRedisKeyNotify()) {
+            relayPublishExecutor.get(Md5Util.hash(event.getClientId())).execute(this::batchPublish0);
+        }
+    }
+
+    /**
+     * 检查是否有遗漏的消息
+     */
+    private void initCheckRelayMessageTask() {
+        for (EventExecutor executor : relayPublishExecutor.getEventExecutor()) {
+            executor.scheduleAtFixedRate(this::batchPublish0, 0, mqttConfig.getMaxBatchRelayDelay(), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -122,6 +149,8 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
             for (PublishMessageStore publishMessage : relayMessageQueue.getRelayMessageQueue()) {
                 publish(RedisKeyConstant.RELAY_MESSAGE_TOPIC.getKey(publishMessage.getBrokerId()), publishMessage);
             }
+        } catch (Exception e) {
+            log.error("batchPublish0 error !!! ", e);
         } finally {
             // 回收内存
             RELAY_MESSAGE_QUEUE_LOCAL.remove();
@@ -129,23 +158,24 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
     }
 
     /**
-     * session变化是应该推送完所有的数据给它
+     * 转发消息
      *
-     * @param event
+     * @param clientSession
+     * @param messageId
+     * @param message
      */
-    @EventListener
-    public void onSessionRefreshEvent(SessionRefreshEvent event) {
-        if (mqttConfig.getIsBatchRelay() && mqttConfig.getIsRedisKeyNotify()) {
-            mqttEventExecuteGroup.get(Md5Util.hash(event.getClientId())).execute(this::batchPublish0);
-        }
-    }
-
-    /**
-     * 检查是否有遗漏的消息
-     */
-    private void initCheckRelayMessageTask() {
-        for (EventExecutor executor : mqttEventExecuteGroup.getEventExecutor()) {
-            executor.scheduleAtFixedRate(this::batchPublish0, 0, mqttConfig.getMaxBatchRelayDelay(), TimeUnit.MILLISECONDS);
+    private void relayMessage0(ClientSession clientSession, int messageId, MqttPublishMessage message) {
+        try {
+            PublishMessageStore publishMessage = PublishMessageStore.fromMessage(clientSession.getBrokerId(),
+                    clientSession.getClientId(), message);
+            publishMessage.setMessageId(messageId);
+            if (mqttConfig.getIsBatchRelay() && mqttConfig.getIsRedisKeyNotify()) {
+                batchPublish(clientSession, publishMessage);
+            } else {
+                publish(RedisKeyConstant.RELAY_MESSAGE_TOPIC.getKey(clientSession.getBrokerId()), publishMessage);
+            }
+        } catch (Throwable throwable) {
+            log.error("relayMessage error !!! clientId {} messageId {}", clientSession.getClientId(), messageId, throwable);
         }
     }
 

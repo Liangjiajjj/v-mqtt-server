@@ -5,6 +5,8 @@ import com.iot.mqtt.dup.PublishMessageStore;
 import com.iot.mqtt.session.ClientSession;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * @author liangjiajun
  */
@@ -16,7 +18,7 @@ public interface IRelayMessageService {
      * @param messageId
      * @param message
      */
-    void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message);
+    void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message, CompletableFuture<Void> future);
 
     /**
      * 批量转发消息
@@ -28,7 +30,6 @@ public interface IRelayMessageService {
 
     /**
      * 批量转发消息
-     *
      */
     void batchPublish0();
 

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 @Service
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "false")
@@ -18,7 +20,7 @@ import org.springframework.stereotype.Service;
 public class NoneRelayMessageService implements IRelayMessageService {
 
     @Override
-    public void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message) {
+    public void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message, CompletableFuture<Void> future) {
         throw new RuntimeException("stand-alone not relay message !!!");
     }
 

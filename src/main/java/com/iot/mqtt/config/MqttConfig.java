@@ -91,6 +91,12 @@ public class MqttConfig {
     private Integer pushThreads;
 
     /**
+     * 转发消息线程池
+     */
+    @Value("${mqtt.relay_push_threads}")
+    private Integer relayPushThreads;
+
+    /**
      * 是否开启 epoll
      */
     @Value("${mqtt.use_epoll}")

@@ -7,6 +7,8 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * @author liangjiajun
  */
@@ -15,10 +17,10 @@ import org.springframework.stereotype.Service;
 public class AtMostOnceQosLevelMessageService extends BaseQosLevelMessageService {
 
     @Override
-    public void publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
+    public void publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message, CompletableFuture<Void> future) {
         String toClientId = subscribe.getClientId();
         log.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribe.getClientId(), subscribe.getTopicFilter(), subscribe.getMqttQoS());
-        publish0(toClientId, message);
+        publish0(toClientId, message, future);
     }
 
     @Override

@@ -8,6 +8,8 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * 暂时不支持qos
  * QoS2可在业务层做，比如在payload中增加去重标记,减少发包数量
@@ -25,9 +27,9 @@ public class ExactlyOnceQosLevelMessageService extends BaseQosLevelMessageServic
     private IDupPublishMessageManager dupPublishMessageManager;
 
     @Override
-    public void publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message) {
+    public void publish(ClientChannel channel, Subscribe subscribe, MqttPublishMessage message, CompletableFuture<Void> future) {
         String toClientId = subscribe.getClientId();
-        publish0(toClientId, message);
+        publish0(toClientId, message, future);
         // qos = 1/2 需要保存消息，确保发送到位
         dupPublishMessageManager.put(toClientId, message);
     }

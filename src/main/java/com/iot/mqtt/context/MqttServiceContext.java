@@ -54,4 +54,11 @@ public class MqttServiceContext {
                 .orElse(Runtime.getRuntime().availableProcessors());
         return new MqttEventExecuteGroup(nThreads, new DefaultThreadFactory("PUBLISH-EXECUTOR"));
     }
+
+    @Bean(value = "RELAY-PUBLISH-EXECUTOR")
+    public MqttEventExecuteGroup relayPublishExecutor(){
+        Integer nThreads = Optional.ofNullable(mqttConfig.getRelayPushThreads())
+                .orElse(Runtime.getRuntime().availableProcessors());
+        return new MqttEventExecuteGroup(nThreads, new DefaultThreadFactory("RELAY-PUBLISH-EXECUTOR"));
+    }
 }

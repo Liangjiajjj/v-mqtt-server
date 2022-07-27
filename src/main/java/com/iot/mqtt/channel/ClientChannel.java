@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.netty.handler.codec.mqtt.MqttProperties;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 
 import java.util.List;
@@ -38,17 +39,15 @@ public interface ClientChannel {
 
     ClientChannel publishComplete(int publishMessageId);
 
-    // void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain);
-
     void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId);
-
-    void publish(String topic, ByteBuf payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId);
 
     void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties);
 
-    ClientChannel pong();
+    void publish(String topic, ByteBuf payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId);
 
-    // ClientChannel disconnect(MqttDisconnectReasonCode code, MqttProperties properties);
+    void publish(int messageId, MqttPublishMessage message);
+
+    ClientChannel pong();
 
     Executor getExecutor();
 

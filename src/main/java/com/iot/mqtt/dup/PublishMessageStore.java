@@ -60,13 +60,22 @@ public class PublishMessageStore extends BaseTopicBean {
                 .messageBytes(messageBytes).build();
     }
 
-    public MqttPublishMessage toMessage() {
+    /**
+     * 申请堆外内存，需要回收
+     *
+     * @return
+     */
+    public MqttPublishMessage toDirectMessage() {
         MqttFixedHeader fixedHeader =
                 new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(mqttQoS), false, 0);
         MqttPublishVariableHeader variableHeader =
                 new MqttPublishVariableHeader(topic, messageId, MqttProperties.NO_PROPERTIES);
-        ByteBuf buf = Unpooled.copiedBuffer(messageBytes);
-        return (MqttPublishMessage) MqttMessageFactory.newMessage(fixedHeader, variableHeader, buf);
+        // 申请堆外内存
+        ByteBuf byteBuf = Unpooled.directBuffer(messageBytes.length);
+        byteBuf.writeBytes(messageBytes);
+        byteBuf.retain();
+        messageBytes = null;
+        return (MqttPublishMessage) MqttMessageFactory.newMessage(fixedHeader, variableHeader, byteBuf);
     }
 
     @Override
@@ -86,5 +95,16 @@ public class PublishMessageStore extends BaseTopicBean {
     public int hashCode() {
         return Objects.hash(topic);
     }
+
+   /* public MqttPublishMessage toMessage() {
+        MqttFixedHeader fixedHeader =
+                new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(mqttQoS), false, 0);
+        MqttPublishVariableHeader variableHeader =
+                new MqttPublishVariableHeader(topic, messageId, MqttProperties.NO_PROPERTIES);
+        // 申请堆外内存
+        ByteBuf byteBuf = Unpooled.copiedBuffer(messageBytes);
+        byteBuf.retain();
+        return (MqttPublishMessage) MqttMessageFactory.newMessage(fixedHeader, variableHeader, byteBuf);
+    }*/
 
 }
