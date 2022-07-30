@@ -19,7 +19,9 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.EventExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
+@Conditional(RedisRelayMessageServiceImpl.RedisRelayProperty.class)
 public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMessageStore> implements IRelayMessageService, RedisBaseService<PublishMessageStore> {
 
     @Autowired
@@ -44,11 +46,12 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
     @Resource(name = "PUBLISH-EXECUTOR")
     private MqttEventExecuteGroup publishExecutor;
 
-    @Resource(name = "RELAY-PUBLISH-EXECUTOR")
-    private MqttEventExecuteGroup relayPublishExecutor;
+    @Resource(name = "RELAY-PUBLISH-CLIENT-EXECUTOR")
+    private MqttEventExecuteGroup relayPublishClientExecutor;
 
     @Autowired
     private IClientChannelManager clientChannelManager;
+
     /**
      * 远程链接,主要是存储批量推送的消息的
      * <p>
@@ -94,7 +97,7 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
 
     @Override
     public void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message, CompletableFuture<Void> future) {
-        relayPublishExecutor.get(clientSession.getMd5Key()).execute(() -> {
+        relayPublishClientExecutor.get(clientSession.getMd5Key()).execute(() -> {
             relayMessage0(clientSession, messageId, message);
             future.complete(null);
         });
@@ -102,7 +105,7 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
 
     @Override
     public void batchPublish(ClientSession clientSession, PublishMessageStore publishMessage) {
-        relayPublishExecutor.assertEventLoop(clientSession.getMd5Key());
+        relayPublishClientExecutor.assertEventLoop(clientSession.getMd5Key());
         RelayMessageQueue relayMessageQueue = getLocalRelayMessageQueue();
         relayMessageQueue.add(publishMessage);
         if (relayMessageQueue.isCanPush(mqttConfig.getBatchRelayCount())) {
@@ -121,7 +124,7 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
     @EventListener
     public void onSessionRefreshEvent(SessionRefreshEvent event) {
         if (mqttConfig.getIsBatchRelay() && mqttConfig.getIsRedisKeyNotify()) {
-            relayPublishExecutor.get(Md5Util.hash(event.getClientId())).execute(this::batchPublish0);
+            relayPublishClientExecutor.get(Md5Util.hash(event.getClientId())).execute(this::batchPublish0);
         }
     }
 
@@ -129,7 +132,7 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
      * 检查是否有遗漏的消息
      */
     private void initCheckRelayMessageTask() {
-        for (EventExecutor executor : relayPublishExecutor.getEventExecutor()) {
+        for (EventExecutor executor : relayPublishClientExecutor.getEventExecutor()) {
             executor.scheduleAtFixedRate(this::batchPublish0, 0, mqttConfig.getMaxBatchRelayDelay(), TimeUnit.MILLISECONDS);
         }
     }
@@ -193,5 +196,19 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
         return relayMessageQueue;
     }
 
+    static class RedisRelayProperty extends AllNestedConditions {
+
+        public RedisRelayProperty() {
+            super(ConfigurationPhase.PARSE_CONFIGURATION);
+        }
+
+        @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
+        static class ClusterEnabled {
+        }
+
+        @ConditionalOnProperty(name = "mqtt.is_open_relay_server", havingValue = "false")
+        static class OpenRelayServer {
+        }
+    }
 
 }

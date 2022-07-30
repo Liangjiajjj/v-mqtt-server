@@ -1,5 +1,8 @@
 package com.iot.mqtt.constant;
 
+/**
+ * @author liangjiajun
+ */
 public class CommonConstant {
 
     public final static String QOS_LEVEL_MESSAGE_SERVICE = "_QOS_LEVEL_MESSAGE_SERVICE";
@@ -11,5 +14,8 @@ public class CommonConstant {
     public final static String AT_LEAST_ONCE = "AT_LEAST_ONCE";
 
     public final static String AT_MOST_ONCE = "AT_MOST_ONCE";
+
+    public final static Integer CLIENT_ID_PROPERTY_ID = 99;
+
 
 }

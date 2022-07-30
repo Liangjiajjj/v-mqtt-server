@@ -1,10 +1,12 @@
 package com.iot.mqtt.channel;
 
+import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.message.handler.base.IMessageHandler;
 import com.iot.mqtt.util.Md5Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.util.concurrent.EventExecutor;
 import lombok.AllArgsConstructor;
@@ -106,6 +108,7 @@ public class ClientChannelImpl implements ClientChannel {
         this.keepAliveTimeoutSeconds = 0;
         this.connectProperties = null;
         this.md5Key = null;
+        this.isConnected = true;
     }
 
     public ClientChannelImpl(Channel channel, EventExecutor executor, MqttConnectMessage msg) {
@@ -170,6 +173,11 @@ public class ClientChannelImpl implements ClientChannel {
     }
 
     @Override
+    public void relayPublish(ByteBuf payload) {
+        this.channel.write(payload);
+    }
+
+    @Override
     public void publish(String topic, byte[] payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId, MqttProperties properties) {
         if (messageId > MAX_MESSAGE_ID || messageId < 0) {
             throw new IllegalArgumentException("messageId must be non-negative integer not larger than " + MAX_MESSAGE_ID);
@@ -202,6 +210,17 @@ public class ClientChannelImpl implements ClientChannel {
         this.write(publish);
     }
 
+    @Override
+    public ClientChannel ping() {
+        MqttFixedHeader fixedHeader =
+                new MqttFixedHeader(MqttMessageType.PINGREQ, false, MqttQoS.AT_MOST_ONCE, false, 0);
+
+        io.netty.handler.codec.mqtt.MqttMessage ping = MqttMessageFactory.newMessage(fixedHeader, null, null);
+
+        this.writeAndFlush(ping);
+
+        return this;
+    }
 
     @Override
     public ClientChannelImpl pong() {
@@ -281,6 +300,19 @@ public class ClientChannelImpl implements ClientChannel {
 
 
     @Override
+    public ClientChannel connect(MqttAuth mqttAuth) {
+        MqttFixedHeader fixedHeader =
+                new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE, false, 0);
+        MqttConnectVariableHeader variableHeader =
+                new MqttConnectVariableHeader(MqttVersion.MQTT_3_1_1.protocolName(), MqttVersion.MQTT_3_1_1.protocolLevel(), true,
+                        true, false, 0, false, false, 0);
+        MqttConnectPayload payload = new MqttConnectPayload("", "", "", mqttAuth.getUsername(), mqttAuth.getPassword());
+        MqttMessage message = MqttMessageFactory.newMessage(fixedHeader, variableHeader, payload);
+        channel.writeAndFlush(message);
+        return this;
+    }
+
+    @Override
     public ClientChannelImpl accept() {
         return accept(false);
     }
@@ -293,9 +325,9 @@ public class ClientChannelImpl implements ClientChannel {
     @Override
     public ClientChannelImpl accept(boolean sessionPresent, MqttProperties properties) {
         synchronized (channel) {
-            if (this.isConnected) {
+          /*  if (this.isConnected) {
                 throw new IllegalStateException("Connection already accepted");
-            }
+            }*/
 
             return this.connack(MqttConnectReturnCode.CONNECTION_ACCEPTED, sessionPresent, properties);
         }

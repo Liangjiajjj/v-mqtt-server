@@ -49,16 +49,24 @@ public class MqttServiceContext {
     }
 
     @Bean(value = "PUBLISH-EXECUTOR")
-    public MqttEventExecuteGroup publishExecutor(){
+    public MqttEventExecuteGroup publishExecutor() {
         Integer nThreads = Optional.ofNullable(mqttConfig.getPushThreads())
                 .orElse(Runtime.getRuntime().availableProcessors());
         return new MqttEventExecuteGroup(nThreads, new DefaultThreadFactory("PUBLISH-EXECUTOR"));
     }
 
-    @Bean(value = "RELAY-PUBLISH-EXECUTOR")
-    public MqttEventExecuteGroup relayPublishExecutor(){
-        Integer nThreads = Optional.ofNullable(mqttConfig.getRelayPushThreads())
+    @Bean(value = "RELAY-PUBLISH-SERVER-EXECUTOR")
+    public MqttEventExecuteGroup relayPublishServerExecutor() {
+        Integer nThreads = Optional.ofNullable(mqttConfig.getRelayPushServerThreads())
                 .orElse(Runtime.getRuntime().availableProcessors());
-        return new MqttEventExecuteGroup(nThreads, new DefaultThreadFactory("RELAY-PUBLISH-EXECUTOR"));
+        return new MqttEventExecuteGroup(nThreads, new DefaultThreadFactory("RELAY-PUBLISH-SERVER-EXECUTOR"));
     }
+
+    @Bean(value = "RELAY-PUBLISH-CLIENT-EXECUTOR")
+    public MqttEventExecuteGroup relayPublishClientExecutor() {
+        Integer nThreads = Optional.ofNullable(mqttConfig.getRelayPushClientThreads())
+                .orElse(Runtime.getRuntime().availableProcessors());
+        return new MqttEventExecuteGroup(nThreads, new DefaultThreadFactory("RELAY-PUBLISH-CLIENT-EXECUTOR"));
+    }
+
 }

@@ -74,7 +74,8 @@ public class MqttServerConfiguration {
 
     private void mqttServer() {
         ServerBootstrap bootstrap = new ServerBootstrap().group(bossGroup, workerGroup).channel(mqttConfig.getUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.INFO)).childHandler(new ChannelInitializer<SocketChannel>() {
+                .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel channel) {
                         ChannelPipeline channelPipeline = channel.pipeline();

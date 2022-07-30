@@ -17,6 +17,8 @@ import java.util.concurrent.Executor;
 
 public interface ClientChannel {
 
+    ClientChannel connect(MqttAuth mqttAuth);
+
     ClientChannel accept();
 
     ClientChannel accept(boolean sessionPresent);
@@ -46,6 +48,10 @@ public interface ClientChannel {
     void publish(String topic, ByteBuf payload, MqttQoS qosLevel, boolean isDup, boolean isRetain, int messageId);
 
     void publish(int messageId, MqttPublishMessage message);
+
+    void relayPublish(ByteBuf payload);
+
+    ClientChannel ping();
 
     ClientChannel pong();
 

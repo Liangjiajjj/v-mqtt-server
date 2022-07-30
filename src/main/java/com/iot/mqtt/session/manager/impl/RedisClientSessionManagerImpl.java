@@ -7,8 +7,10 @@ import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,8 +20,10 @@ import java.util.Optional;
  *
  * @author liangjiajun
  */
+
+@Slf4j
 @Service
-@ConditionalOnExpression("${emqtt.cluster_enabled:true}&&${emqtt.redis_key_notify:false}")
+@Conditional(RedisClientSessionManagerImpl.RedisSessionProperty.class)
 public class RedisClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObject> implements IClientSessionManager, RedisBaseService<JSONObject> {
 
     @Override
@@ -61,4 +65,18 @@ public class RedisClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObje
         expireBucket(RedisKeyConstant.CLIENT_SESSION_KEY.getKey(clientId), expire);
     }
 
+    static class RedisSessionProperty extends AllNestedConditions {
+
+        public RedisSessionProperty() {
+            super(ConfigurationPhase.PARSE_CONFIGURATION);
+        }
+
+        @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
+        static class ClusterEnabled {
+        }
+
+        @ConditionalOnProperty(name = "mqtt.redis_key_notify", havingValue = "false")
+        static class RedisKeyNotify {
+        }
+    }
 }

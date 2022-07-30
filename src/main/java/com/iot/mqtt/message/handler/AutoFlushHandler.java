@@ -81,7 +81,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler implements IHandler {
         super.channelInactive(ctx);
     }
 
-    private void initialize(ChannelHandlerContext ctx) {
+    protected void initialize(ChannelHandlerContext ctx) {
         // Avoid the case where destroy() is called before scheduling timeouts.
         // See: https://github.com/netty/netty/issues/143
         if (LOG.isDebugEnabled()) {
@@ -100,7 +100,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler implements IHandler {
         writerIdleTimeout = loop.schedule(new WriterIdleTimeoutTask(ctx), writerIdleTimeNanos, TimeUnit.NANOSECONDS);
     }
 
-    private void destroy() {
+    protected void destroy() {
         state = STATE.destroyed;
 
         if (writerIdleTimeout != null) {

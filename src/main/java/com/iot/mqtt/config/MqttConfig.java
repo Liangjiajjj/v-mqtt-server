@@ -4,6 +4,8 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 /**
  * @author liangjiajun
  */
@@ -84,17 +86,18 @@ public class MqttConfig {
     @Value("${mqtt.work_threads}")
     private Integer workThreads;
 
-    /**
-     * 推送消息线程池
-     */
-    @Value("${mqtt.push_threads}")
-    private Integer pushThreads;
 
     /**
      * 转发消息线程池
      */
-    @Value("${mqtt.relay_push_threads}")
-    private Integer relayPushThreads;
+    @Value("${mqtt.relay_push_server_threads}")
+    private Integer relayPushServerThreads;
+
+    /**
+     * 转发消息线程池
+     */
+    @Value("${mqtt.relay_push_client_threads}")
+    private Integer relayPushClientThreads;
 
     /**
      * 是否开启 epoll
@@ -137,5 +140,55 @@ public class MqttConfig {
      */
     @Value("${mqtt.so_keep_alive}")
     private Boolean soKeepAlive = true;
+
+    // =========================================================== 转发配置 ===========================================================
+
+    /**
+     * 推送消息线程池
+     */
+    @Value("${mqtt.is_open_relay_server}")
+    private Boolean isOpenRelayServer;
+
+    /**
+     * 推送serverMap
+     */
+    @Value("#{${mqtt.broker_id_2_url_map}}")
+    private Map<String, String> brokerId2UrlMap;
+
+    /**
+     * 推送消息线程池
+     */
+    @Value("${mqtt.push_threads}")
+    private Integer pushThreads;
+
+    /**
+     * 转发host
+     */
+    @Value("${mqtt.relay_host}")
+    private String relayHost;
+
+    /**
+     * 转发端口
+     */
+    @Value("${mqtt.relay_port}")
+    private Integer relayPort;
+
+    /**
+     * 转发服务端 boss 线程数
+     */
+    @Value("${mqtt.relay_server_boss_io_threads}")
+    private Integer relayServerBossGroupNThreads = 1;
+
+    /**
+     * 转发服务端 worker 线程数
+     */
+    @Value("${mqtt.relay_server_worker_io_threads}")
+    private Integer relayServerWorkerGroupNThreads = 16;
+
+    /**
+     * 转发客户端 worker 线程数
+     */
+    @Value("${mqtt.relay_client_worker_io_threads}")
+    private Integer relayClientWorkerGroupNThreads = 16;
 
 }

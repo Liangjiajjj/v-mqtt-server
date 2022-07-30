@@ -10,6 +10,8 @@ import com.iot.mqtt.constant.RedisKeyConstant;
 import com.iot.mqtt.event.SessionRefreshEvent;
 import com.iot.mqtt.redis.RedisBaseService;
 import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
+import com.iot.mqtt.relay.cluster.RelayConnectionPool;
+import com.iot.mqtt.relay.impl.ClusterRelayMessageServiceImpl;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.LocalClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
@@ -17,10 +19,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.DeletedObjectListener;
 import org.redisson.api.ExpiredObjectListener;
 import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
 import org.redisson.api.listener.SetObjectListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -35,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
-@ConditionalOnExpression("${emqtt.cluster_enabled:true}&&${emqtt.redis_key_notify:true}")
+@Conditional(RedisLocalClientSessionManagerImpl.RedisLocalSessionProperty.class)
 public class RedisLocalClientSessionManagerImpl extends RedisBaseServiceImpl<JSONObject> implements IClientSessionManager, RedisBaseService<JSONObject> {
 
     @Autowired
@@ -190,5 +197,19 @@ public class RedisLocalClientSessionManagerImpl extends RedisBaseServiceImpl<JSO
         log.info("Local ClientSession refresh clientId {} ", clientId);
     }
 
+    static class RedisLocalSessionProperty extends AllNestedConditions {
+
+        public RedisLocalSessionProperty() {
+            super(ConfigurationPhase.PARSE_CONFIGURATION);
+        }
+
+        @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
+        static class ClusterEnabled {
+        }
+
+        @ConditionalOnProperty(name = "mqtt.redis_key_notify", havingValue = "true")
+        static class RedisKeyNotify {
+        }
+    }
 
 }

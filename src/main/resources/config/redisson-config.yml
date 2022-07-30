@@ -3,7 +3,7 @@ singleServerConfig:
   connectTimeout: 10000
   timeout: 3000
   retryAttempts: 3
-  retryInterval: 1500
+  retryInterval: 3000
   password: null
   subscriptionsPerConnection: 50
   clientName: null

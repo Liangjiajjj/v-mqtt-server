@@ -86,7 +86,6 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
             ReferenceCountUtil.release(message);
             log.error("message handler is null type {} ", message.fixedHeader().messageType(), e);
         }
-
     }
 
     /**

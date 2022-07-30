@@ -21,6 +21,7 @@
         <lombok.version>1.16.20</lombok.version>
         <hutool.version>5.8.1</hutool.version>
         <redisson.version>3.17.4</redisson.version>
+        <guava.version>25.1-jre</guava.version>
     </properties>
     <dependencies>
         <dependency>
@@ -110,7 +111,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>${guava.version}</version>
         </dependency>
 
         <dependency>

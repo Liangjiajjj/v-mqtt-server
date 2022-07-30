@@ -26,11 +26,13 @@ public interface IRelayMessageService {
      * @param clientSession
      * @param publishMessage
      */
-    void batchPublish(ClientSession clientSession, PublishMessageStore publishMessage);
+    default void batchPublish(ClientSession clientSession, PublishMessageStore publishMessage) {
+    }
 
     /**
      * 批量转发消息
      */
-    void batchPublish0();
+    default void batchPublish0() {
+    }
 
 }

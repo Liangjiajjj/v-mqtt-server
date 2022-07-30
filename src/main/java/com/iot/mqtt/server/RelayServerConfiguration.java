@@ -1,102 +1,78 @@
-/*
 package com.iot.mqtt.server;
 
 import com.iot.mqtt.config.MqttConfig;
-import com.iot.mqtt.message.handler.AutoFlushHandler;
-import com.iot.mqtt.message.handler.MqttMessageHandler;
-import io.netty.bootstrap.Bootstrap;
+import com.iot.mqtt.relay.cluster.RelayConnectionPool;
+import com.iot.mqtt.relay.handler.RelayMessageDecoderHandler;
+import com.iot.mqtt.relay.handler.RelayMessageEncoderHandler;
+import com.iot.mqtt.relay.handler.RelayServerHandler;
+import com.iot.mqtt.util.netty.EventLoopUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
-import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLEngine;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.util.concurrent.TimeUnit;
-
-*/
 /**
  * @author liangjiajun
- *//*
-
+ */
 @Slf4j
 @Configuration
+@ConditionalOnProperty(name = "mqtt.is_open_relay_server", havingValue = "true")
 public class RelayServerConfiguration {
 
     @Autowired
     private MqttConfig mqttConfig;
 
     @Autowired
-    private MqttMessageHandler mqttMessageHandler;
-    */
-/**
-     * ssl
-     *//*
-
-    private SslContext sslContext;
-    */
-/**
-     * boss 线程池
-     *//*
-
-    private EventLoopGroup bossGroup;
-    */
-/**
-     * work 线程池
-     *//*
-
-    private EventLoopGroup workerGroup;
+    private RelayServerHandler relayServerHandler;
 
     @Bean
-    public void start() throws Exception {
-        relayServer();
-        log.info("relay server is listening on port {} ", mqttConfig.getPort());
-        relayClient();
-        log.info("relay client is listening on port {} ", mqttConfig.getPort());
+    public void relayServer() {
+        relayServer0();
+        log.info("relay server is listening on port {} .", mqttConfig.getRelayPort());
     }
 
-    */
-/**
+    /**
+     * 转发客户端连接池
+     */
+    @Bean
+    public RelayConnectionPool relayClientConnectionPool() throws Exception {
+        log.info("relay client pool is listening .");
+        EventLoopGroup clientWorkerGroup = EventLoopUtil.newEventLoopGroup(mqttConfig.getRelayClientWorkerGroupNThreads()
+                , new DefaultThreadFactory("RELAY-CLIENT-WORKER-GROUP"));
+        return new RelayConnectionPool(clientWorkerGroup);
+    }
+
+    /**
      * 转发服务端
-     *//*
-
-    private void relayServer() {
-        ServerBootstrap bootstrap = new ServerBootstrap().group(bossGroup, workerGroup).channel(mqttConfig.getUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.INFO)).childHandler(new ChannelInitializer<SocketChannel>() {
+     */
+    private void relayServer0() {
+        EventLoopGroup acceptorGroup = EventLoopUtil.newEventLoopGroup(mqttConfig.getRelayServerBossGroupNThreads(), new DefaultThreadFactory("RELAY-SERVER-BOSS-EXECUTOR"));
+        EventLoopGroup workerGroup = EventLoopUtil.newEventLoopGroup(mqttConfig.getRelayServerBossGroupNThreads(), new DefaultThreadFactory("RELAY-SERVER-WORK-EXECUTOR"));
+        ServerBootstrap bootstrap = new ServerBootstrap().group(acceptorGroup, workerGroup).channel(mqttConfig.getUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+                .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel channel) {
                         ChannelPipeline channelPipeline = channel.pipeline();
                         // Netty心跳机制
                         channelPipeline.addLast("idle", new IdleStateHandler(0, 0, mqttConfig.getKeepAlive()));
-                        // Netty提供的SSL处理
-                        if (mqttConfig.getSsl()) {
-                            SSLEngine sslEngine = sslContext.newEngine(channel.alloc());
-                            sslEngine.setUseClientMode(false);        // 服务端模式
-                            sslEngine.setNeedClientAuth(false);        // 不需要验证客户端
-                            channelPipeline.addLast("ssl", new SslHandler(sslEngine));
-                        }
-                        channelPipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
-                        channelPipeline.addLast("decoder", new MqttDecoder());
-                        channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
-                        channelPipeline.addLast("broker", mqttMessageHandler);
+                        channelPipeline.addLast("decoder", new RelayMessageDecoderHandler());
+                        channelPipeline.addLast("encoder", RelayMessageEncoderHandler.INSTANCE);
+                        channelPipeline.addLast("handler", relayServerHandler);
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, mqttConfig.getSoBacklog())
@@ -104,43 +80,11 @@ public class RelayServerConfiguration {
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_KEEPALIVE, mqttConfig.getSoKeepAlive())
                 .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT);
-        if (Strings.isNotBlank(mqttConfig.getHost())) {
-            bootstrap.bind(mqttConfig.getHost(), mqttConfig.getPort());
+        if (Strings.isNotBlank(mqttConfig.getRelayHost())) {
+            bootstrap.bind(mqttConfig.getRelayHost(), mqttConfig.getRelayPort());
         } else {
-            bootstrap.bind(mqttConfig.getPort());
-        }
-    }
-
-    */
-/**
-     * 转发客户端
-     *//*
-
-    private void relayClient() {
-        Bootstrap bootstrap = new Bootstrap().group(bossGroup, workerGroup).channel(mqttConfig.getUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.INFO)).childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel channel) {
-                        ChannelPipeline channelPipeline = channel.pipeline();
-                        // Netty心跳机制
-                        channelPipeline.addLast("idle", new IdleStateHandler(0, 0, mqttConfig.getKeepAlive()));
-                        channelPipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
-                        channelPipeline.addLast("decoder", new MqttDecoder());
-                        channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
-                        channelPipeline.addLast("broker", mqttMessageHandler);
-                    }
-                })
-                .option(ChannelOption.SO_BACKLOG, mqttConfig.getSoBacklog())
-                .option(ChannelOption.SO_REUSEADDR, true)
-                .childOption(ChannelOption.TCP_NODELAY, true)
-                .childOption(ChannelOption.SO_KEEPALIVE, mqttConfig.getSoKeepAlive())
-                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT);
-        if (Strings.isNotBlank(mqttConfig.getHost())) {
-            bootstrap.bind(mqttConfig.getHost(), mqttConfig.getPort());
-        } else {
-            bootstrap.bind(mqttConfig.getPort());
+            bootstrap.bind(mqttConfig.getRelayPort());
         }
     }
 
 }
-*/

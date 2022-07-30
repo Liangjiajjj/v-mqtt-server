@@ -66,7 +66,7 @@ public abstract class BaseQosLevelMessageService implements IQosLevelMessageServ
             publishMessage = message.toDirectMessage();
             MqttQoS respQoS = message.getMqttQoS() > mqttQoS.value() ? mqttQoS : MqttQoS.valueOf(message.getMqttQoS());
             message.setMqttQoS(respQoS.value());
-            publish0(clientChannel.clientIdentifier(), message.toMessage(), future);
+            publish0(clientChannel.clientIdentifier(), publishMessage, future);
         } catch (Throwable throwable) {
             log.error("sendRetainMessage0 error !!! ", throwable);
             future.completeExceptionally(throwable);
