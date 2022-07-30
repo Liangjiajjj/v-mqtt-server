@@ -3,7 +3,6 @@ package com.iot.mqtt.relay.handler;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.manager.IClientChannelManager;
 import com.iot.mqtt.message.handler.RelayMessageHandler;
-import com.iot.mqtt.messageid.service.IMessageIdService;
 import com.iot.mqtt.relay.message.*;
 import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import com.iot.mqtt.util.Md5Util;
@@ -59,21 +58,26 @@ public class RelayServerHandler extends RelayMessageHandler {
         try {
             String clientId = message.getClientId();
             relayPublishServerExecutor.get(Md5Util.hash(clientId)).execute(() -> {
-                ClientChannel clientChannel = clientChannelManager.get(clientId);
-                if (Objects.isNull(clientChannel)) {
-                    log.warn("receive relay message, Channel is null ... clientId:{}   ", clientId);
-                    return;
-                }
-                try {
-                    clientChannel.relayPublish(message.getRelayMessage());
-                } catch (Throwable throwable) {
-                    log.error("listener relay error message !!!", throwable);
-                } finally {
-                    ReferenceCountUtil.release(message);
-                }
+                relayPublish(clientId, message);
             });
         } catch (Exception e) {
             log.error("handlerPublish error !!! ", e);
+            ReferenceCountUtil.release(message);
+        }
+    }
+
+    private void relayPublish(String clientId, RelayPublishMessage message) {
+        ClientChannel clientChannel = clientChannelManager.get(clientId);
+        if (Objects.isNull(clientChannel)) {
+            log.warn("receive relay message, Channel is null ... clientId:{}   ", clientId);
+            ReferenceCountUtil.release(message);
+            return;
+        }
+        try {
+            clientChannel.relayPublish(message.getRelayMessage());
+        } catch (Throwable throwable) {
+            log.error("listener relay error message !!!", throwable);
+        } finally {
             ReferenceCountUtil.release(message);
         }
     }
