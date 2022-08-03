@@ -43,16 +43,12 @@ public class RelayConnectionPool implements Closeable {
 
     protected final ConcurrentHashMap<InetSocketAddress, ConcurrentMap<Integer, CompletableFuture<RelayConnection>>> pool;
 
-    private String username;
-    private String password;
     private final Bootstrap bootstrap;
     private final EventLoopGroup eventLoopGroup;
     private final int maxConnectionsPerHosts = 64;
     protected final DnsNameResolver dnsResolver;
 
     public RelayConnectionPool(String username, String password, EventLoopGroup eventLoopGroup) throws Exception {
-        this.username = username;
-        this.password = password;
         this.eventLoopGroup = eventLoopGroup;
         pool = new ConcurrentHashMap<>();
         bootstrap = new Bootstrap();

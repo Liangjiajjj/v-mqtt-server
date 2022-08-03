@@ -32,11 +32,11 @@ public class RelayConnection extends RelayMessageHandler {
 
     private volatile boolean isActive = true;
 
-    private EventLoopGroup eventLoopGroup;
+    private final EventLoopGroup eventLoopGroup;
 
-    private String username;
+    private final String username;
 
-    private String password;
+    private final String password;
 
     private ChannelHandlerContext ctx;
 
