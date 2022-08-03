@@ -18,10 +18,10 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.Optional;
 
 /**
@@ -33,7 +33,7 @@ import java.util.Optional;
 @Service(value = "CONNECT" + CommonConstant.MQTT_MESSAGE_HANDLER)
 public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage> {
 
-    @Autowired
+    @Resource
     private IAuthService authService;
 
     /**

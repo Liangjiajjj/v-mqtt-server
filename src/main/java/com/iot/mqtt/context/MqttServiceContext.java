@@ -8,12 +8,12 @@ import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Optional;
 
 /**
@@ -23,9 +23,9 @@ import java.util.Optional;
 @Component
 public class MqttServiceContext {
 
-    @Autowired
+    @Resource
     private MqttConfig mqttConfig;
-    @Autowired
+    @Resource
     private ApplicationContext context;
 
     /**

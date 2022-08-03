@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -31,20 +32,23 @@ public class RelayMessageDecoderHandler extends ReplayingDecoder<RelayMessageDec
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
-        switch (state()) {
+        State state = state();
+        switch (state) {
             case HEAD:
                 try {
                     length = buffer.readInt();
                     checkpoint(RelayMessageDecoderHandler.State.PAYLOAD);
                     // fall through
                 } catch (Exception cause) {
+                    log.error("RelayMessageDecoderHandler decode HEAD error !!! ", cause);
                     out.add(invalidMessage(cause));
                     return;
                 }
+                break;
             case PAYLOAD:
+                byte type = buffer.readByte();
+                ByteBuf payload = buffer.readBytes(length);
                 try {
-                    byte type = buffer.readByte();
-                    ByteBuf payload = buffer.readBytes(length);
                     RelayMessageType relayMessageType = RelayMessageType.getRelayMessageType(type);
                     switch (Objects.requireNonNull(relayMessageType)) {
                         case auth:
@@ -62,9 +66,14 @@ public class RelayMessageDecoderHandler extends ReplayingDecoder<RelayMessageDec
                             out.add(new RelayPongMessage());
                             break;
                         case pub:
-                            Result<String> clientId = decodeString(payload);
-                            ByteBuf payloadBytes = payload.readRetainedSlice(length - clientId.numberOfBytesConsumed);
-                            out.add(new RelayPublishMessage(clientId.value, payloadBytes));
+                            try {
+                                Result<String> clientId = decodeString(payload);
+                                // payloadLength = allLength - clientIdLength
+                                ByteBuf payloadBytes = payload.readRetainedSlice(length - clientId.numberOfBytesConsumed);
+                                out.add(new RelayPublishMessage(clientId.value, payloadBytes));
+                            } catch (Exception cause) {
+                                log.error("RelayMessageDecoderHandler decode pub payload error !!! type {}", type, cause);
+                            }
                             break;
                         default:
                             throw new RuntimeException("not message type !!!");
@@ -74,8 +83,10 @@ public class RelayMessageDecoderHandler extends ReplayingDecoder<RelayMessageDec
                     // fall through
                 } catch (Throwable cause) {
                     out.add(invalidMessage(cause));
-                    log.error("RelayMessageDecoderHandler error !!! ", cause);
+                    log.error("RelayMessageDecoderHandler decode PAYLOAD error !!! type {}", type, cause);
                     return;
+                } finally {
+                    ReferenceCountUtil.release(payload);
                 }
             case BAD_MESSAGE:
                 // Keep discarding until disconnection.
@@ -83,6 +94,7 @@ public class RelayMessageDecoderHandler extends ReplayingDecoder<RelayMessageDec
                 break;
             default:
                 // Shouldn't reach here.
+                log.error("RelayMessageDecoderHandler error !!! not type {}", state);
                 throw new Error();
         }
 

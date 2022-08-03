@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="info" monitorInterval="30">
 	<properties>
-		<property name="LOG_HOME">logs</property>
+		<property name="LOG_HOME">/Users/liangjiajun/Documents/v-mqtt-server/logs/dev1</property>
 		<property name="LOG_FILE_NAME">mqtt-server</property>
 		<Property name="PID">????</Property>
 		<Property name="LOG_EXCEPTION_CONVERSION_WORD">%xwEx</Property>
@@ -36,11 +36,6 @@
 	<Loggers>
 		<logger name="com.iot.mqtt" level="info"
 				includeLocation="true" additivity="false">
-			<appender-ref ref="FileLog" />
-			<appender-ref ref="Console" />
-		</logger>
-		<logger name="io.netty" level="trace"
-					 includeLocation="false" additivity="false">
 			<appender-ref ref="FileLog" />
 			<appender-ref ref="Console" />
 		</logger>

@@ -5,9 +5,10 @@ import com.iot.mqtt.messageid.service.IMessageIdService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  *
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
 public class RedisMessageIdServiceImpl implements IMessageIdService {
 
-    @Autowired
+    @Resource
     private RedissonClient redissonClient;
 
     @Override

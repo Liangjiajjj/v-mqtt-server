@@ -55,16 +55,16 @@ public class ClusterSubscribeManagerImpl extends RedisBaseServiceImpl<Subscribe>
 
     private TopicFilter<Subscribe> treeTopicFilter;
 
-    @Autowired
+    @Resource
     private MqttConfig config;
 
-    @Autowired
+    @Resource
     private ApplicationContext context;
 
-    @Autowired
+    @Resource
     private MqttServiceContext mqttServiceContext;
 
-    @Autowired
+    @Resource
     private IRetainMessageManager retainMessageManager;
 
     @Resource(name = "PUBLISH-EXECUTOR")

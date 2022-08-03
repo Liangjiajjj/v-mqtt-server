@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 @Conditional(RedisRelayMessageServiceImpl.RedisRelayProperty.class)
 public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMessageStore> implements IRelayMessageService, RedisBaseService<PublishMessageStore> {
 
-    @Autowired
+    @Resource
     private MqttConfig mqttConfig;
 
     @Resource(name = "PUBLISH-EXECUTOR")
@@ -49,7 +49,7 @@ public class RedisRelayMessageServiceImpl extends RedisBaseServiceImpl<PublishMe
     @Resource(name = "RELAY-PUBLISH-CLIENT-EXECUTOR")
     private MqttEventExecuteGroup relayPublishClientExecutor;
 
-    @Autowired
+    @Resource
     private IClientChannelManager clientChannelManager;
 
     /**

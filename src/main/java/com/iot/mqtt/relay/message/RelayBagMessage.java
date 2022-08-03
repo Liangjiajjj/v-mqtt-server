@@ -13,6 +13,6 @@ public class RelayBagMessage extends RelayBaseMessage {
 
     @Override
     public RelayMessageType getType() {
-        return null;
+        return RelayMessageType.bag;
     }
 }

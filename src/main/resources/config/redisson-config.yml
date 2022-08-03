@@ -8,9 +8,9 @@ singleServerConfig:
   subscriptionsPerConnection: 50
   clientName: null
   subscriptionConnectionMinimumIdleSize: 1
-  subscriptionConnectionPoolSize: 64
+  subscriptionConnectionPoolSize: 32
   connectionMinimumIdleSize: 24
-  connectionPoolSize: 64
+  connectionPoolSize: 32
   database: 0
   dnsMonitoringInterval: 5000
   address: "redis://127.0.0.1:6379"

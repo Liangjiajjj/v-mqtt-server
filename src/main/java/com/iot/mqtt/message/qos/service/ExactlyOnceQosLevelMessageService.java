@@ -5,9 +5,9 @@ import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.subscribe.Subscribe;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 @Service(value = CommonConstant.EXACTLY_ONCE + CommonConstant.QOS_LEVEL_MESSAGE_SERVICE)
 public class ExactlyOnceQosLevelMessageService extends BaseQosLevelMessageService {
 
-    @Autowired
+    @Resource
     private IDupPublishMessageManager dupPublishMessageManager;
 
     @Override

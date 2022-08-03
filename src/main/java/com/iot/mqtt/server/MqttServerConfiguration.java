@@ -20,10 +20,10 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.Resource;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
@@ -37,9 +37,9 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class MqttServerConfiguration {
 
-    @Autowired
+    @Resource
     private MqttConfig mqttConfig;
-    @Autowired
+    @Resource
     private MqttMessageHandler mqttMessageHandler;
     /**
      * ssl

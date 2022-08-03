@@ -11,6 +11,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,8 +32,14 @@ public class RelayServerHandler extends RelayMessageHandler {
     @Resource(name = "RELAY-PUBLISH-SERVER-EXECUTOR")
     private MqttEventExecuteGroup relayPublishServerExecutor;
 
-    @Autowired
+    @Resource
     private IClientChannelManager clientChannelManager;
+
+    @Value(value = "rsa.relay_server_password")
+    private String username;
+
+    @Value(value = "rsa.relay_server_password")
+    private String password;
 
     @Override
     protected void handlerPing(ChannelHandlerContext ctx, RelayPingMessage message) {
@@ -46,8 +53,11 @@ public class RelayServerHandler extends RelayMessageHandler {
     @Override
     protected void handlerConnect(ChannelHandlerContext ctx, RelayAuthMessage message) {
         try {
-            // todo:判断是否密码正确
-            ctx.writeAndFlush(new RelayAuthAckMessage());
+            if (username.equals(message.getUserName()) && password.equals(message.getPassWord())) {
+                ctx.writeAndFlush(new RelayAuthAckMessage());
+                return;
+            }
+            ctx.close();
         } finally {
             ReferenceCountUtil.release(message);
         }

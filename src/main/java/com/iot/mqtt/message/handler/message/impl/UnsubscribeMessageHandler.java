@@ -6,8 +6,9 @@ import com.iot.mqtt.message.handler.base.BaseMessageHandler;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * 退订topic
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service(value = "UNSUBSCRIBE" + CommonConstant.MQTT_MESSAGE_HANDLER)
 public class UnsubscribeMessageHandler extends BaseMessageHandler<MqttUnsubscribeMessage>  {
 
-    @Autowired
+    @Resource
     private ISubscribeManager subscribeManager;
 
     @Override

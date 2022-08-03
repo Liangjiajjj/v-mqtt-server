@@ -6,9 +6,9 @@ import com.iot.mqtt.dup.manager.IDupPublishMessageManager;
 import com.iot.mqtt.subscribe.Subscribe;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 @Service(value = CommonConstant.AT_LEAST_ONCE + CommonConstant.QOS_LEVEL_MESSAGE_SERVICE)
 public class AtLeastOnceQosLevelMessageService extends BaseQosLevelMessageService {
 
-    @Autowired
+    @Resource
     private IDupPublishMessageManager dupPublishMessageManager;
 
     @Override

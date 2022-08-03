@@ -7,13 +7,17 @@ import lombok.Getter;
  */
 
 public enum RelayMessageType {
+    bag((byte) 0),
 
     auth((byte) 1),
+
     auth_ack((byte) 2),
+
     ping((byte) 3),
+
     pong((byte) 4),
-    pub((byte) 5),
-    ;
+
+    pub((byte) 5),;
 
     @Getter
     private byte type;
@@ -30,4 +34,4 @@ public enum RelayMessageType {
         }
         return null;
     }
-}
+    }

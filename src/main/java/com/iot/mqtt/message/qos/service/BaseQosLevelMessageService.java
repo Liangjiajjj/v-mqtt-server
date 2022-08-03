@@ -26,22 +26,22 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public abstract class BaseQosLevelMessageService implements IQosLevelMessageService {
 
-    @Autowired
+    @Resource
     private MqttConfig mqttConfig;
 
-    @Autowired
+    @Resource
     private IMessageIdService messageIdService;
 
-    @Autowired
+    @Resource
     private IRelayMessageService relayMessageService;
 
-    @Autowired
+    @Resource
     private IRetainMessageManager retainMessageManager;
 
-    @Autowired
+    @Resource
     private IClientSessionManager clientSessionManager;
 
-    @Autowired
+    @Resource
     private IClientChannelManager clientChannelManager;
 
     @Resource(name = "PUBLISH-EXECUTOR")

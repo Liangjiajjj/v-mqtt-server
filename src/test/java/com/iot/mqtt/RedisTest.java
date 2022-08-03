@@ -1,22 +1,20 @@
 package com.iot.mqtt;
 
 import com.iot.mqtt.message.handler.message.impl.SubscribeMessageHandler;
-import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import com.iot.mqtt.subscribe.Subscribe;
+import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.redisson.Redisson;
 import org.redisson.api.DeletedObjectListener;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -27,11 +25,11 @@ import java.util.concurrent.TimeUnit;
 @FixMethodOrder(MethodSorters.JVM)
 public class RedisTest {
 
-    @Autowired
+    @Resource
     private SubscribeMessageHandler subscribeMessageHandler;
-    @Autowired
+    @Resource
     private ISubscribeManager subscribeManager;
-    @Autowired
+    @Resource
     private RedissonClient redissonClient;
 
     @Test

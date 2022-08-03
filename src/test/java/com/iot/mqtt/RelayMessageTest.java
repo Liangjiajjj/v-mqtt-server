@@ -7,10 +7,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 @FixMethodOrder(MethodSorters.JVM)
 public class RelayMessageTest {
 
-    @Autowired
+    @Resource
     private RelayConnectionPool relayConnectionPool;
 
     @Test

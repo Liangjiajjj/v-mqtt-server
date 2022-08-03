@@ -1,10 +1,10 @@
 package com.iot.mqtt.redis.impl;
 
-import com.iot.mqtt.redis.RedisBatchInterceptor;
 import com.iot.mqtt.redis.RedisBaseService;
+import com.iot.mqtt.redis.RedisBatchInterceptor;
 import org.redisson.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RedisBaseServiceImpl<V> implements RedisBaseService<V> {
 
-    @Autowired
+    @Resource
     private RedissonClient redissonClient;
 
     @Override

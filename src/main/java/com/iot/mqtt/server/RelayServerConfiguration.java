@@ -11,19 +11,18 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.mqtt.MqttDecoder;
-import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+
+import javax.annotation.Resource;
 
 /**
  * @author liangjiajun
@@ -33,11 +32,18 @@ import org.springframework.core.annotation.Order;
 @ConditionalOnProperty(name = "mqtt.is_open_relay_server", havingValue = "true")
 public class RelayServerConfiguration {
 
-    @Autowired
+    @Resource
     private MqttConfig mqttConfig;
 
-    @Autowired
+    @Resource
     private RelayServerHandler relayServerHandler;
+
+    @Value(value = "rsa.relay_server_password")
+    private String username;
+
+    @Value(value = "rsa.relay_server_password")
+    private String password;
+
 
     @Bean
     public void relayServer() {
@@ -53,7 +59,7 @@ public class RelayServerConfiguration {
         log.info("relay client pool is listening .");
         EventLoopGroup clientWorkerGroup = EventLoopUtil.newEventLoopGroup(mqttConfig.getRelayClientWorkerGroupNThreads()
                 , new DefaultThreadFactory("RELAY-CLIENT-WORKER-GROUP"));
-        return new RelayConnectionPool(clientWorkerGroup);
+        return new RelayConnectionPool(username, password, clientWorkerGroup);
     }
 
     /**

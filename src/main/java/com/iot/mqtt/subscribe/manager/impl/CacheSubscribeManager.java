@@ -3,19 +3,19 @@ package com.iot.mqtt.subscribe.manager.impl;
 import cn.hutool.core.util.StrUtil;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.context.MqttServiceContext;
-import com.iot.mqtt.message.qos.service.IQosLevelMessageService;
 import com.iot.mqtt.retain.manager.IRetainMessageManager;
-import com.iot.mqtt.redis.annotation.RedisBatch;
 import com.iot.mqtt.subscribe.Subscribe;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import io.netty.handler.codec.mqtt.MqttQoS;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,10 +28,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "false")
 public class CacheSubscribeManager implements ISubscribeManager {
 
-    @Autowired
+    @Resource
     private MqttServiceContext mqttServiceContext;
 
-    @Autowired
+    @Resource
     private IRetainMessageManager retainMessageManager;
     /**
      * 订阅 列表

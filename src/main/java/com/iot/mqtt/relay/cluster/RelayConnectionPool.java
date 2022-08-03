@@ -16,6 +16,7 @@ import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -42,12 +43,16 @@ public class RelayConnectionPool implements Closeable {
 
     protected final ConcurrentHashMap<InetSocketAddress, ConcurrentMap<Integer, CompletableFuture<RelayConnection>>> pool;
 
+    private String username;
+    private String password;
     private final Bootstrap bootstrap;
     private final EventLoopGroup eventLoopGroup;
     private final int maxConnectionsPerHosts = 64;
     protected final DnsNameResolver dnsResolver;
 
-    public RelayConnectionPool(EventLoopGroup eventLoopGroup) throws Exception {
+    public RelayConnectionPool(String username, String password, EventLoopGroup eventLoopGroup) throws Exception {
+        this.username = username;
+        this.password = password;
         this.eventLoopGroup = eventLoopGroup;
         pool = new ConcurrentHashMap<>();
         bootstrap = new Bootstrap();
@@ -68,7 +73,7 @@ public class RelayConnectionPool implements Closeable {
                             // 自定义协议
                             channelPipeline.addLast("decoder", new RelayMessageDecoderHandler());
                             channelPipeline.addLast("encoder", RelayMessageEncoderHandler.INSTANCE);
-                            channelPipeline.addLast("handler", new RelayConnection(eventLoopGroup));
+                            channelPipeline.addLast("handler", new RelayConnection(username, password, eventLoopGroup));
                         }
                     });
         } catch (Exception e) {

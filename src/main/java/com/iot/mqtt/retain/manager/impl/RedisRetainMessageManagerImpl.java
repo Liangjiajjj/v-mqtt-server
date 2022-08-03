@@ -3,21 +3,21 @@ package com.iot.mqtt.retain.manager.impl;
 import com.iot.mqtt.config.MqttConfig;
 import com.iot.mqtt.constant.RedisKeyConstant;
 import com.iot.mqtt.dup.PublishMessageStore;
-import com.iot.mqtt.retain.RetainMessageOperation;
-import com.iot.mqtt.retain.manager.IRetainMessageManager;
-import com.iot.mqtt.redis.RedisBaseService;
-import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
 import com.iot.mqtt.filter.FixedTopicFilter;
 import com.iot.mqtt.filter.TopicFilter;
 import com.iot.mqtt.filter.TreeTopicFilter;
+import com.iot.mqtt.redis.RedisBaseService;
+import com.iot.mqtt.redis.impl.RedisBaseServiceImpl;
+import com.iot.mqtt.retain.RetainMessageOperation;
+import com.iot.mqtt.retain.manager.IRetainMessageManager;
 import com.iot.mqtt.type.OperationType;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +38,7 @@ public class RedisRetainMessageManagerImpl extends RedisBaseServiceImpl<PublishM
 
     private TopicFilter<PublishMessageStore> treeTopicFilter;
 
-    @Autowired
+    @Resource
     private MqttConfig config;
 
     @PostConstruct

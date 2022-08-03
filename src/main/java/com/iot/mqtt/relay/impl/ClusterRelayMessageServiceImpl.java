@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 @Conditional(ClusterRelayMessageServiceImpl.ClusterRelayProperty.class)
 public class ClusterRelayMessageServiceImpl implements IRelayMessageService {
 
-    @Autowired
+    @Resource
     private MqttConfig mqttConfig;
 
     @Resource(name = "RELAY-PUBLISH-CLIENT-EXECUTOR")
@@ -41,10 +41,10 @@ public class ClusterRelayMessageServiceImpl implements IRelayMessageService {
     /**
      * 转发连接池
      */
-    @Autowired
+    @Resource
     private RelayConnectionPool relayConnectionPool;
 
-    @Autowired
+    @Resource
     private IClientSessionManager clientSessionManager;
 
     @Override

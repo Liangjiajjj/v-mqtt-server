@@ -9,9 +9,10 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.redisson.api.BatchOptions;
 import org.redisson.api.RBatch;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 /**
  * Redis 管道切面
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "mqtt.cluster_enabled", havingValue = "true")
 public class RedisBatchInterceptor {
 
-    @Autowired
+    @Resource
     private RedissonClient redissonClient;
 
     private static final ThreadLocal<RBatch> THREAD_LOCAL = new ThreadLocal<>();

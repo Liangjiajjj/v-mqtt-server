@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 /**
  * @author liangjiajun
  */
@@ -22,6 +24,10 @@ public class RelayMessageHandler extends SimpleChannelInboundHandler<RelayBaseMe
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RelayBaseMessage msg) {
         try {
+            if (Objects.isNull(msg)) {
+                log.error("RelayMessageHandler msg is null !!! ");
+                return;
+            }
             switch (msg.getType()) {
                 case auth:
                     handlerConnect(ctx, (RelayAuthMessage) msg);
@@ -38,6 +44,8 @@ public class RelayMessageHandler extends SimpleChannelInboundHandler<RelayBaseMe
                     handlerPublish(ctx, (RelayPublishMessage) msg);
                     break;
                 default:
+                    log.error("not type {}", msg.getType());
+                    break;
             }
         } catch (Exception e) {
             log.error("RelayMessageHandler error !!!", e);

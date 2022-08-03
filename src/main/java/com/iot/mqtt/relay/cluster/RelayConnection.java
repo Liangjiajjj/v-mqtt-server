@@ -9,6 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
@@ -34,11 +35,17 @@ public class RelayConnection extends RelayMessageHandler {
 
     private EventLoopGroup eventLoopGroup;
 
+    private String username;
+
+    private String password;
+
     private ChannelHandlerContext ctx;
 
     private final CompletableFuture<Void> connectionFuture = new CompletableFuture<>();
 
-    public RelayConnection(EventLoopGroup eventLoopGroup) {
+    public RelayConnection(String username, String password, EventLoopGroup eventLoopGroup) {
+        this.username = username;
+        this.password = password;
         this.eventLoopGroup = eventLoopGroup;
     }
 
@@ -76,7 +83,7 @@ public class RelayConnection extends RelayMessageHandler {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
         super.channelActive(ctx);
-        ctx.writeAndFlush(new RelayAuthMessage("", ""));
+        ctx.writeAndFlush(new RelayAuthMessage(username, password));
         this.eventLoopGroup.schedule(this::checkConnectionTimeout, operationTimeoutMs, TimeUnit.SECONDS);
     }
 

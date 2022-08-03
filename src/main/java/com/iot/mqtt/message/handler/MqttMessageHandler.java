@@ -3,15 +3,15 @@ package com.iot.mqtt.message.handler;
 import com.iot.mqtt.channel.ClientChannel;
 import com.iot.mqtt.channel.ClientChannelImpl;
 import com.iot.mqtt.channel.manager.IClientChannelManager;
-import com.iot.mqtt.constant.CommonConstant;
 import com.iot.mqtt.context.MqttServiceContext;
-import com.iot.mqtt.message.handler.base.IHandler;
 import com.iot.mqtt.message.handler.base.IMessageHandler;
-import com.iot.mqtt.redis.annotation.RedisBatch;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.IClientSessionManager;
 import com.iot.mqtt.subscribe.manager.ISubscribeManager;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -19,10 +19,9 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,16 +38,16 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
         super(false);
     }
 
-    @Autowired
+    @Resource
     protected MqttServiceContext mqttServiceContext;
 
-    @Autowired
+    @Resource
     private ISubscribeManager subscribeManager;
 
-    @Autowired
+    @Resource
     private IClientChannelManager clientChannelManager;
 
-    @Autowired
+    @Resource
     private IClientSessionManager clientSessionManager;
 
     @Override
