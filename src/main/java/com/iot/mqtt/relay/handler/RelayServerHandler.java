@@ -67,9 +67,7 @@ public class RelayServerHandler extends RelayMessageHandler {
     protected void handlerPublish(ChannelHandlerContext ctx, RelayPublishMessage message) {
         try {
             String clientId = message.getClientId();
-            relayPublishServerExecutor.get(Md5Util.hash(clientId)).execute(() -> {
-                relayPublish(clientId, message);
-            });
+            relayPublishServerExecutor.get(Md5Util.hash(clientId)).execute(() -> relayPublish(clientId, message));
         } catch (Exception e) {
             log.error("handlerPublish error !!! ", e);
             ReferenceCountUtil.release(message);

@@ -10,7 +10,6 @@ import com.iot.mqtt.session.manager.IClientSessionManager;
 import com.iot.mqtt.thread.MqttEventExecuteGroup;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Conditional;
