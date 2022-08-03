@@ -37,7 +37,7 @@ public class MqttEncodeUtil {
             int fixedHeaderBufferSize = 1 + getVariableLengthInt(variablePartSize);
 
             ByteBuf buf = ctx.alloc().buffer(fixedHeaderBufferSize + variablePartSize);
-            buf.writeByte(getFixedHeaderByte1(mqttFixedHeader));
+            buf.writeByte(getFixedHeaderByte(mqttFixedHeader));
             writeVariableLengthInt(buf, variablePartSize);
             writeExactUTF8String(buf, topicName, topicNameBytes);
             if (mqttFixedHeader.qosLevel().value() > 0) {
@@ -72,7 +72,7 @@ public class MqttEncodeUtil {
         } while (num > 0);
     }
 
-    private static int getFixedHeaderByte1(MqttFixedHeader header) {
+    private static int getFixedHeaderByte(MqttFixedHeader header) {
         int ret = 0;
         ret |= header.messageType().value() << 4;
         if (header.isDup()) {
