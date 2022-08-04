@@ -44,7 +44,11 @@ public enum RedisKeyConstant {
     /**
      * 同步订阅保留消息
      */
-    SYN_RETAIN_MESSAGE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "syn_retain_message_topic")
+    SYN_RETAIN_MESSAGE_TOPIC(RedisKeyConstant.MQTT_SERVER_PRE + "syn_retain_message_topic"),
+    /**
+     * 转发服务端注册表
+     */
+    RELAY_SERVER_REGISTRY(RedisKeyConstant.MQTT_SERVER_PRE + "relay_server_registry:%s"),
     ;
 
     private final String key;

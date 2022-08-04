@@ -17,12 +17,15 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.concurrent.Executors;
 
 /**
  * @author liangjiajun
@@ -36,6 +39,9 @@ public class RelayServerConfiguration {
     private MqttConfig mqttConfig;
 
     @Resource
+    private RedissonClient redissonClient;
+
+    @Resource
     private RelayServerHandler relayServerHandler;
 
     @Value(value = "rsa.relay_server_password")
@@ -44,11 +50,14 @@ public class RelayServerConfiguration {
     @Value(value = "rsa.relay_server_password")
     private String password;
 
+    @PostConstruct
+    private void init() {
+        // 起一个单独线程检查 relayServer 注册表
+        relayServer();
+    }
 
-    @Bean
-    public void relayServer() {
-        relayServer0();
-        log.info("relay server is listening on port {} .", mqttConfig.getRelayPort());
+    private void checkRelayServer() {
+
     }
 
     /**
@@ -65,7 +74,7 @@ public class RelayServerConfiguration {
     /**
      * 转发服务端
      */
-    private void relayServer0() {
+    private void relayServer() {
         EventLoopGroup acceptorGroup = EventLoopUtil.newEventLoopGroup(mqttConfig.getRelayServerBossGroupNThreads(), new DefaultThreadFactory("RELAY-SERVER-BOSS-EXECUTOR"));
         EventLoopGroup workerGroup = EventLoopUtil.newEventLoopGroup(mqttConfig.getRelayServerBossGroupNThreads(), new DefaultThreadFactory("RELAY-SERVER-WORK-EXECUTOR"));
         ServerBootstrap bootstrap = new ServerBootstrap().group(acceptorGroup, workerGroup).channel(mqttConfig.getUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
@@ -86,11 +95,20 @@ public class RelayServerConfiguration {
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_KEEPALIVE, mqttConfig.getSoKeepAlive())
                 .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT);
+        ChannelFuture channelFuture;
         if (Strings.isNotBlank(mqttConfig.getRelayHost())) {
-            bootstrap.bind(mqttConfig.getRelayHost(), mqttConfig.getRelayPort());
+            channelFuture = bootstrap.bind(mqttConfig.getRelayHost(), mqttConfig.getRelayPort());
         } else {
-            bootstrap.bind(mqttConfig.getRelayPort());
+            channelFuture = bootstrap.bind(mqttConfig.getRelayPort());
         }
+        channelFuture.addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                log.info("relay server is listening success , on port {} .", mqttConfig.getRelayPort());
+                // 注册到redis上
+            } else {
+                log.info("relay server is listening fail , on port {} .", mqttConfig.getRelayPort());
+            }
+        });
     }
 
 }

@@ -174,6 +174,12 @@ public class MqttConfig {
     private Integer relayPort;
 
     /**
+     * 转发服务端是否主动注册
+     */
+    @Value("${mqtt.is_auto_register}")
+    private Boolean isAutoRegister;
+
+    /**
      * 转发服务端 boss 线程数
      */
     @Value("${mqtt.relay_server_boss_io_threads}")
@@ -190,5 +196,6 @@ public class MqttConfig {
      */
     @Value("${mqtt.relay_client_worker_io_threads}")
     private Integer relayClientWorkerGroupNThreads = 16;
+
 
 }

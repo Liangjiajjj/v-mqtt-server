@@ -5,6 +5,7 @@ import com.iot.mqtt.event.SessionRefreshEvent;
 import com.iot.mqtt.relay.connection.RelayConnection;
 import com.iot.mqtt.relay.connection.RelayConnectionPool;
 import com.iot.mqtt.relay.api.IRelayMessageService;
+import com.iot.mqtt.relay.manager.api.IRelayServerRegistryManager;
 import com.iot.mqtt.session.ClientSession;
 import com.iot.mqtt.session.manager.api.IClientSessionManager;
 import com.iot.mqtt.thread.MqttEventExecuteGroup;
@@ -46,13 +47,17 @@ public class ClusterRelayMessageServiceImpl implements IRelayMessageService {
     @Resource
     private IClientSessionManager clientSessionManager;
 
+    @Resource
+    private IRelayServerRegistryManager relayServerRegistryManager;
+
     @Override
     public void relayMessage(ClientSession clientSession, int messageId, MqttPublishMessage message, CompletableFuture<Void> future) {
         String brokerId = clientSession.getBrokerId();
         String clientId = clientSession.getClientId();
         try {
-            String url = mqttConfig.getBrokerId2UrlMap().get(brokerId);
-            InetSocketAddress address = new InetSocketAddress(url.split(":")[0], Integer.parseInt(url.split(":")[1]));
+            // String url = mqttConfig.getBrokerId2UrlMap().get(brokerId);
+            // InetSocketAddress address = new InetSocketAddress(url.split(":")[0], Integer.parseInt(url.split(":")[1]));
+            InetSocketAddress address = relayServerRegistryManager.getInetSocketAddress(brokerId);
             // 每个客户端hash到一个转发连接
             relayConnectionPool.getConnection(clientSession.getMd5Key(), address).whenComplete((connection, throwable) -> {
                 relayMessage0(connection, clientSession, message, future);
@@ -84,8 +89,9 @@ public class ClusterRelayMessageServiceImpl implements IRelayMessageService {
         if (mqttConfig.getIsBatchRelay() && mqttConfig.getIsRedisKeyNotify()) {
             ClientSession clientSession = clientSessionManager.get(event.getClientId());
             if (Objects.nonNull(clientSession)) {
-                String url = mqttConfig.getBrokerId2UrlMap().get(clientSession.getBrokerId());
-                InetSocketAddress address = new InetSocketAddress(url.split(":")[0], Integer.parseInt(url.split(":")[1]));
+                // String url = mqttConfig.getBrokerId2UrlMap().get(clientSession.getBrokerId());
+                // InetSocketAddress address = new InetSocketAddress(url.split(":")[0], Integer.parseInt(url.split(":")[1]));
+                InetSocketAddress address = relayServerRegistryManager.getInetSocketAddress(clientSession.getBrokerId());
                 CompletableFuture<RelayConnection> completableFuture = relayConnectionPool.getConnection(clientSession.getMd5Key(), address, false);
                 if (Objects.nonNull(completableFuture)) {
                     completableFuture.whenComplete((relayConnection, throwable) -> relayConnection.flush());
