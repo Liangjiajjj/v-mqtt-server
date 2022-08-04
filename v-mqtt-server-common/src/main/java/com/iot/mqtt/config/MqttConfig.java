@@ -168,6 +168,12 @@ public class MqttConfig {
     private String relayHost;
 
     /**
+     * 转发服务端最大注册数
+     */
+    @Value("${mqtt.relay_server_max_count}")
+    private Integer relayServerMaxCount;
+
+    /**
      * 转发端口
      */
     @Value("${mqtt.relay_port}")

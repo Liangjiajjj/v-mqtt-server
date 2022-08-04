@@ -59,7 +59,7 @@ public class RedisRelayServerRegistryManagerImpl implements IRelayServerRegistry
         try {
             registerRelayServerRegistry();
             String registryKey = RedisKeyConstant.RELAY_SERVER_REGISTRY.getKey("*");
-            redissonClient.getKeys().getKeysByPattern(registryKey).forEach((key) -> {
+            redissonClient.getKeys().getKeysByPattern(registryKey, mqttConfig.getRelayServerMaxCount()).forEach((key) -> {
                 String address = (String) redissonClient.getBucket(key).get();
                 relayServerRegistry.put(key, new InetSocketAddress(address.split(":")[0], Integer.parseInt(address.split(":")[1])));
             });

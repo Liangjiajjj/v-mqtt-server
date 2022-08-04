@@ -24,6 +24,7 @@ mqtt:
   is_open_relay_server: true
   relay_host:
   relay_port: 1831
+  relay_server_max_count: 10
   is_auto_register: true
   relay_server_boss_io_threads: 1
   relay_server_worker_io_threads: 32
