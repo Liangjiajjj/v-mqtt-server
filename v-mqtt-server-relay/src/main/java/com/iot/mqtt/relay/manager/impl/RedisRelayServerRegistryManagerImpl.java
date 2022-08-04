@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
 public class RedisRelayServerRegistryManagerImpl implements IRelayServerRegistryManager {
 
     /**
-     * 获取本地ip工具类
+     * 本地ip
      */
-    private final InetUtils inetUtils = new InetUtils(new InetUtilsProperties());
+    private final String localHost = new InetUtils(new InetUtilsProperties()).findFirstNonLoopbackHostInfo().getHostname();
 
     @Resource
     private MqttConfig mqttConfig;
@@ -45,16 +45,13 @@ public class RedisRelayServerRegistryManagerImpl implements IRelayServerRegistry
 
     @PostConstruct
     private void init() {
-        /**
-         * 刷新注册表
-         */
         checkRelayServerRegistry();
-        /**
-         * 每30秒刷新一下注册表
-         */
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::checkRelayServerRegistry, 0, 30, TimeUnit.SECONDS);
     }
 
+    /**
+     * 刷新注册表
+     */
     private void checkRelayServerRegistry() {
         try {
             registerRelayServerRegistry();
@@ -68,11 +65,14 @@ public class RedisRelayServerRegistryManagerImpl implements IRelayServerRegistry
         }
     }
 
+    /**
+     * 每30秒刷新一下注册表
+     */
     private void registerRelayServerRegistry() {
         String host = mqttConfig.getRelayHost();
         if (Strings.isNullOrEmpty(host)) {
             // 默认找内网ip
-            host = inetUtils.findFirstNonLoopbackHostInfo().getHostname();
+            host = localHost;
         }
         redissonClient.getBucket(RedisKeyConstant.RELAY_SERVER_REGISTRY
                 .getKey(mqttConfig.getBrokerId()))
