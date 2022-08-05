@@ -1,5 +1,6 @@
 package com.iot.mqtt.channel;
 
+import com.google.common.collect.Lists;
 import com.iot.mqtt.handler.IMessageHandler;
 import com.iot.mqtt.info.MqttAuth;
 import com.iot.mqtt.info.MqttWill;
@@ -13,7 +14,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 客户端链接(session与channel隔离)
@@ -60,7 +63,7 @@ public class ClientChannelImpl implements ClientChannel {
     /**
      * clientId
      */
-    private final String clientIdentifier;
+    private String clientIdentifier;
 
     /**
      * 认证信息
@@ -96,6 +99,11 @@ public class ClientChannelImpl implements ClientChannel {
      * md5 key
      */
     private final Long md5Key;
+
+    public ClientChannelImpl(String clientIdentifier, Channel channel) {
+        this(channel);
+        this.clientIdentifier = clientIdentifier;
+    }
 
     public ClientChannelImpl(Channel channel) {
         this.channel = channel;
@@ -299,13 +307,13 @@ public class ClientChannelImpl implements ClientChannel {
 
 
     @Override
-    public ClientChannel connect(MqttAuth mqttAuth) {
+    public ClientChannel connect(String clientIdentifier, MqttAuth mqttAuth) {
         MqttFixedHeader fixedHeader =
                 new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE, false, 0);
         MqttConnectVariableHeader variableHeader =
                 new MqttConnectVariableHeader(MqttVersion.MQTT_3_1_1.protocolName(), MqttVersion.MQTT_3_1_1.protocolLevel(), true,
-                        true, false, 0, false, false, 0);
-        MqttConnectPayload payload = new MqttConnectPayload("", "", "", mqttAuth.getUsername(), mqttAuth.getPassword());
+                        true, false, 0, false, false, 60);
+        MqttConnectPayload payload = new MqttConnectPayload(clientIdentifier, "", "", mqttAuth.getUsername(), mqttAuth.getPassword());
         MqttMessage message = MqttMessageFactory.newMessage(fixedHeader, variableHeader, payload);
         channel.writeAndFlush(message);
         return this;
@@ -348,6 +356,18 @@ public class ClientChannelImpl implements ClientChannel {
         }
     }
 
+    @Override
+    public ClientChannel subscribe(int messageId, MqttQoS mqttQoS, String topic) {
+        MqttFixedHeader fixedHeader =
+                new MqttFixedHeader(MqttMessageType.SUBSCRIBE, false, mqttQoS, false, 0);
+        MqttMessageIdVariableHeader variableHeader = new MqttMessageIdAndPropertiesVariableHeader(messageId, MqttProperties.NO_PROPERTIES);
+        MqttSubscribePayload payload = new MqttSubscribePayload(Lists.newArrayList(new MqttTopicSubscription(topic, mqttQoS)));
+        MqttSubscribeMessage message = new MqttSubscribeMessage(fixedHeader, variableHeader, payload);
+        // MqttMessage message = MqttMessageFactory.newMessage(fixedHeader, variableHeader, payload);
+        writeAndFlush(message);
+        return this;
+    }
+
     private ClientChannelImpl connack(MqttConnectReturnCode returnCode, boolean sessionPresent, MqttProperties properties) {
 
         MqttFixedHeader fixedHeader =
@@ -355,7 +375,7 @@ public class ClientChannelImpl implements ClientChannel {
         MqttConnAckVariableHeader variableHeader =
                 new MqttConnAckVariableHeader(returnCode, sessionPresent, properties);
 
-        io.netty.handler.codec.mqtt.MqttMessage connack = MqttMessageFactory.newMessage(fixedHeader, variableHeader, null);
+        MqttMessage connack = MqttMessageFactory.newMessage(fixedHeader, variableHeader, null);
 
         writeAndFlush(connack);
 

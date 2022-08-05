@@ -86,7 +86,9 @@ public class ConnectMessageHandler extends BaseMessageHandler<MqttConnectMessage
             clientChannel.getChannel().attr(AttributeKey.valueOf("clientId")).set(clientId);
             // 建立链接
             clientChannel.accept(false);
-            log.info("CONNECT - threadName {}, clientId: {}, cleanSession: {}", Thread.currentThread().getName(), clientId, clientChannel.isCleanSession());
+            if (log.isDebugEnabled()) {
+                log.debug("CONNECT - threadName {}, clientId: {}, cleanSession: {}", Thread.currentThread().getName(), clientId, clientChannel.isCleanSession());
+            }
             // 如果cleanSession不为0, 需要重发同一clientId存储的未完成的QoS1和QoS2的DUP消息
             this.handleQosMessage(clientChannel);
         } catch (Throwable throwable) {

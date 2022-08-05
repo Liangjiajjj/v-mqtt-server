@@ -1,0 +1,5 @@
+pressure:
+  client_count: 5000
+
+logging:
+  config: /Users/liangjiajun/Work/v-mqtt-server/v-mqtt-server-pressure/src/main/resources/config/log4j2.xml

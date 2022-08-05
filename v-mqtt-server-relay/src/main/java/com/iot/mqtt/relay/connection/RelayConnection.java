@@ -118,6 +118,7 @@ public class RelayConnection extends RelayMessageHandler {
         isActive = false;
         if (!connectionFuture.isDone()) {
             connectionFuture.completeExceptionally(new RuntimeException("Connection already closed"));
+            return;
         }
         connectionFuture.completeExceptionally(new RuntimeException("Disconnected from server at " + ctx.channel().remoteAddress()));
     }

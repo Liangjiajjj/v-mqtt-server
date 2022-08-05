@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info" monitorInterval="30">
+	<properties>
+		<property name="LOG_HOME">logs</property>
+		<property name="LOG_FILE_NAME">mqtt-pressure-client</property>
+		<Property name="PID">????</Property>
+		<Property name="LOG_EXCEPTION_CONVERSION_WORD">%xwEx</Property>
+		<Property name="LOG_LEVEL_PATTERN">%5p</Property>
+		<Property name="LOG_DATEFORMAT_PATTERN">yyyy-MM-dd HH:mm:ss.SSS</Property>
+		<Property name="CONSOLE_LOG_PATTERN">%clr{%d{${LOG_DATEFORMAT_PATTERN}}}{faint} %clr{${LOG_LEVEL_PATTERN}} %clr{${sys:PID}}{magenta} %clr{---}{faint} %clr{[%15.15t]}{faint} %clr{%-40.40c{1.}}{cyan} %clr{:}{faint} %m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property>
+
+	</properties>
+
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<!-- <PatternLayout pattern="%d %-5p (%F:%L) - %m%n" /> -->
+			<PatternLayout pattern="${CONSOLE_LOG_PATTERN}" />
+		</Console>
+
+		<RollingRandomAccessFile name="FileLog"
+								 fileName="${LOG_HOME}/${LOG_FILE_NAME}.log" filePattern="${LOG_HOME}/${LOG_FILE_NAME}.log.%d{yyyy-MM-dd-HH}">
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %p %m%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="${LOG_HOME}" maxDepth="1">
+					<IfFileName glob="${LOG_FILE_NAME}.log.*" />
+					<IfLastModified age="30d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingRandomAccessFile>
+
+	</Appenders>
+
+	<Loggers>
+		<logger name="com.iot.mqtt" level="info"
+				includeLocation="true" additivity="false">
+			<appender-ref ref="FileLog" />
+			<appender-ref ref="Console" />
+		</logger>
+		<logger name="io.netty" level="trace"
+					 includeLocation="false" additivity="false">
+			<appender-ref ref="FileLog" />
+			<appender-ref ref="Console" />
+		</logger>
+		<logger name="org.springframework" level="info"
+				includeLocation="true" additivity="false">
+			<appender-ref ref="FileLog"/>
+			<appender-ref ref="Console"/>
+		</logger>
+		<root level="error" includeLocation="true" additivity="false">
+			<appender-ref ref="FileLog" />
+			<appender-ref ref="Console" />
+		</root>
+	</Loggers>
+</Configuration>

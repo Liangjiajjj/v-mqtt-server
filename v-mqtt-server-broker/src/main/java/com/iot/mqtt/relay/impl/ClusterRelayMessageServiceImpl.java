@@ -72,7 +72,9 @@ public class ClusterRelayMessageServiceImpl implements IRelayMessageService {
             try {
                 connection.relayPublish(clientSession.getClientId(), message);
                 future.complete(null);
-                log.info("connection relayMessage brokerId {} , clientId {} ,", clientSession.getBrokerId(), clientSession.getClientId());
+                if (log.isDebugEnabled()) {
+                    log.debug("connection relayMessage brokerId {} , clientId {} ,", clientSession.getBrokerId(), clientSession.getClientId());
+                }
             } catch (Exception e) {
                 log.error("connection relayMessage error !!! brokerId {} , clientId {} ,", clientSession.getBrokerId(), clientSession.getClientId(), e);
             }

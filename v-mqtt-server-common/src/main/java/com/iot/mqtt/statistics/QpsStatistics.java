@@ -18,17 +18,17 @@ public class QpsStatistics {
     private static AtomicLong totalResponseTime = new AtomicLong(0);
     private static AtomicInteger totalRequest = new AtomicInteger(0);
 
-    public QpsStatistics() {
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-            long duration = System.currentTimeMillis() - beginTime.get();
-            if (duration != 0) {
-                log.info("qps: " + 1000L * totalRequest.get() / duration + ", " + "avg response time: " + ((float) totalResponseTime.get()) / totalRequest.get());
-            }
-        }, 0, 2, TimeUnit.SECONDS);
-    }
-
     public void cost(Long costTime) {
         totalResponseTime.addAndGet(costTime);
         totalRequest.incrementAndGet();
+        if (beginTime.compareAndSet(0, System.currentTimeMillis())) {
+            Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+                long duration = System.currentTimeMillis() - beginTime.get();
+                if (duration != 0) {
+                    log.info("qps: " + 1000L * totalRequest.get() / duration + ", " + "avg response time: " + ((float) totalResponseTime.get()) / totalRequest.get());
+                }
+            }, 0, 10, TimeUnit.SECONDS);
+        }
     }
+
 }

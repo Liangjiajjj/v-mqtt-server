@@ -19,7 +19,7 @@ import java.util.concurrent.Executor;
 
 public interface ClientChannel {
 
-    ClientChannel connect(MqttAuth mqttAuth);
+    ClientChannel connect(String clientIdentifier, MqttAuth mqttAuth);
 
     ClientChannel accept();
 
@@ -30,6 +30,8 @@ public interface ClientChannel {
     ClientChannel reject(MqttConnectReturnCode returnCode);
 
     ClientChannel reject(MqttConnectReturnCode returnCode, MqttProperties properties);
+
+    ClientChannel subscribe(int messageId, MqttQoS mqttQoS, String topic);
 
     ClientChannel subscribeAcknowledge(int subscribeMessageId, List<MqttQoS> grantedQoSLevels);
 
@@ -80,4 +82,6 @@ public interface ClientChannel {
     void handleClosed();
 
     Long getMd5Key();
+
+    void flush();
 }
