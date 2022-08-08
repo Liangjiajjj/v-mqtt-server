@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class MqttPressureConfiguration {
 
+    @Value("${pressure.start_index}")
+    private Integer startIndex;
     @Value("${pressure.client_count}")
     private Integer clientCount;
     @Resource
@@ -50,7 +52,7 @@ public class MqttPressureConfiguration {
     }
 
     private void initClients() {
-        for (int clientId = 0; clientId < clientCount; clientId++) {
+        for (int clientId = startIndex; clientId < clientCount; clientId++) {
             createConnection(clientId);
         }
     }
