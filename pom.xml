@@ -7,6 +7,7 @@
         <module>v-mqtt-server-common</module>
         <module>v-mqtt-server-broker</module>
         <module>v-mqtt-server-relay</module>
+        <module>v-mqtt-server-pressure</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

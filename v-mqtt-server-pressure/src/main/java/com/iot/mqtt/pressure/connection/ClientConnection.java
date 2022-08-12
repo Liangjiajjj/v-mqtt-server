@@ -14,14 +14,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class ClientConnection extends SimpleChannelInboundHandler<MqttMessage> {
-
-    private static AtomicInteger mqttClientId = new AtomicInteger();
 
     private static AtomicInteger messageId = new AtomicInteger();
 
@@ -31,13 +30,16 @@ public class ClientConnection extends SimpleChannelInboundHandler<MqttMessage> {
 
     private final EventLoop eventLoop;
 
+    private final Set<Integer> failClientIds;
+
     private ClientChannel channel;
 
     private ChannelHandlerContext ctx;
 
     private final CompletableFuture<Void> connectionFuture = new CompletableFuture<>();
 
-    public ClientConnection(EventLoopGroup eventLoopGroup) {
+    public ClientConnection(Set<Integer> failClientIds, EventLoopGroup eventLoopGroup) {
+        this.failClientIds = failClientIds;
         this.eventLoop = eventLoopGroup.next();
     }
 
@@ -54,6 +56,7 @@ public class ClientConnection extends SimpleChannelInboundHandler<MqttMessage> {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         log.info("{} disconnected", ctx.channel());
+        failClientIds.add(Integer.parseInt(getClientId()));
         if (!connectionFuture.isDone()) {
             connectionFuture.completeExceptionally(new RuntimeException("Connection already closed"));
             return;

@@ -1,7 +1,7 @@
 pressure:
   mqtt_host: 127.0.0.1
   mqtt_port: 8000
-  start_index : 0
+  start_index : 5001
   client_count: 5000
 
 logging:

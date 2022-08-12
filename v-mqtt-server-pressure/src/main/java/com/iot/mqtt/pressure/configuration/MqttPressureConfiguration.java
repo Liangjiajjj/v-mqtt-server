@@ -20,6 +20,10 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class MqttPressureConfiguration {
 
+    @Value("${pressure.mqtt_host}")
+    private String mqttHost;
+    @Value("${pressure.mqtt_port}")
+    private Integer mqttPort;
     @Value("${pressure.start_index}")
     private Integer startIndex;
     @Value("${pressure.client_count}")
@@ -27,20 +31,15 @@ public class MqttPressureConfiguration {
     @Resource
     private ClientConnectionPool connectionPool;
 
-    /**
-     * 已经失败的客户端id
-     */
-    private final Set<Integer> failClientIds = new ConcurrentHashSet<>();
-
     @PostConstruct
     private void init() {
-        initClients();
         checkFailClients();
+        initClients();
     }
 
     private void checkFailClients() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-            for (Integer clientId : failClientIds) {
+            for (Integer clientId : connectionPool.getFailClientIds()) {
                 try {
                     log.info("reconnection clientId {}", clientId);
                     createConnection(clientId);
@@ -52,18 +51,18 @@ public class MqttPressureConfiguration {
     }
 
     private void initClients() {
-        for (int clientId = startIndex; clientId < clientCount; clientId++) {
+        for (int clientId = startIndex; clientId < startIndex + clientCount; clientId++) {
             createConnection(clientId);
         }
     }
 
     private void createConnection(int id) {
-        CompletableFuture<ClientConnection> connection = connectionPool.getConnection(id, new InetSocketAddress("127.0.0.1", 8000));
+        CompletableFuture<ClientConnection> connection = connectionPool.getConnection(id, new InetSocketAddress(mqttHost, mqttPort));
         connection.whenComplete((clientConnection, throwable) -> {
             clientConnection.connectionFuture().whenComplete((unused, connectionThrowable) -> {
                 if (Objects.nonNull(connectionThrowable)) {
                     String clientId = clientConnection.getClientId();
-                    failClientIds.add(Integer.parseInt(clientId));
+                    connectionPool.getFailClientIds().add(Integer.parseInt(clientId));
                     return;
                 }
                 String clientId = clientConnection.getChannel().clientIdentifier();

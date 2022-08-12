@@ -1,5 +1,6 @@
 package com.iot.mqtt.pressure.connection;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import com.iot.mqtt.statistics.QpsStatistics;
 import com.iot.mqtt.util.netty.EventLoopUtil;
 import io.netty.bootstrap.Bootstrap;
@@ -14,11 +15,13 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -28,6 +31,12 @@ import static com.iot.mqtt.util.netty.ChannelFutures.toCompletableFuture;
 @Slf4j
 @Component
 public class ClientConnectionPool {
+
+    /**
+     * 已经失败的客户端id
+     */
+    @Getter
+    private final Set<Integer> failClientIds = new ConcurrentHashSet<>();
 
     private final Bootstrap bootstrap;
 
@@ -63,7 +72,7 @@ public class ClientConnectionPool {
                             channelPipeline.addLast("idle", new IdleStateHandler(0, 0, 60));
                             channelPipeline.addLast("decoder", new MqttDecoder());
                             channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
-                            channelPipeline.addLast("handler", new ClientConnection(eventLoopGroup));
+                            channelPipeline.addLast("handler", new ClientConnection(failClientIds, eventLoopGroup));
                         }
                     });
         } catch (Exception e) {
